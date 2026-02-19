@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+declare const Deno: any;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,14 +6,15 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-serve(async (req: Request) => {
+Deno.serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
-    const { image } = await req.json();
+    const body = await req.json() as { image?: string };
+    const image = body.image;
 
     if (!image) {
       throw new Error("No image provided");
@@ -21,6 +22,7 @@ serve(async (req: Request) => {
 
     console.log(`Received image size: ${Math.round(image.length / 1024)} KB`);
 
+    // @ts-ignore: Deno global is available in Edge Functions
     const apiKey = Deno.env.get("GEMINI_API_KEY");
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY is not set");
@@ -66,7 +68,17 @@ serve(async (req: Request) => {
       throw new Error(`Gemini API returned ${response.status}: ${errorText}`);
     }
 
-    const data = await response.json();
+    interface GeminiResponse {
+      candidates?: {
+        content?: {
+          parts?: {
+            text?: string;
+          }[];
+        };
+      }[];
+    }
+
+    const data = await response.json() as GeminiResponse;
     console.log("Gemini Response:", JSON.stringify(data));
 
     let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";

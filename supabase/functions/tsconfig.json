@@ -2,7 +2,8 @@
     "compilerOptions": {
         "allowJs": true,
         "lib": [
-            "deno.window"
+            "esnext",
+            "dom"
         ],
         "strict": true
     }
