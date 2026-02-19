@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react'
 import { Camera, Upload, X, Loader2, Check, Plus } from 'lucide-react'
 import { supabase } from '../lib/supabaseClient'
@@ -13,14 +12,51 @@ export default function PantryScanner() {
     const fileInputRef = useRef(null)
     const { addItems } = usePantryStore()
 
-    const handleFileSelect = (e) => {
-        const file = e.target.files?.[0]
-        if (file) {
+    const resizeImage = (file) => {
+        return new Promise((resolve) => {
             const reader = new FileReader()
-            reader.onloadend = () => {
-                setImage(reader.result) // Base64 string
+            reader.onload = (e) => {
+                const img = new Image()
+                img.onload = () => {
+                    const canvas = document.createElement('canvas')
+                    let width = img.width
+                    let height = img.height
+                    const maxSize = 1024
+
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height *= maxSize / width
+                            width = maxSize
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width *= maxSize / height
+                            height = maxSize
+                        }
+                    }
+
+                    canvas.width = width
+                    canvas.height = height
+                    const ctx = canvas.getContext('2d')
+                    ctx.drawImage(img, 0, 0, width, height)
+                    resolve(canvas.toDataURL('image/jpeg', 0.7)) // Compress to 0.7 quality
+                }
+                img.src = e.target.result
             }
             reader.readAsDataURL(file)
+        })
+    }
+
+    const handleFileSelect = async (e) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            try {
+                const resizedImage = await resizeImage(file)
+                setImage(resizedImage)
+            } catch (error) {
+                console.error("Error resizing image:", error)
+                alert("Failed to process image. Please try again.")
+            }
         }
     }
 
@@ -78,7 +114,7 @@ export default function PantryScanner() {
 
     return (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center bg-black/50 sm:p-4">
-            <div className="bg-white w-full h-full sm:h-auto sm:max-w-lg sm:rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+            <div className="bg-white w-full h-[100dvh] sm:h-auto sm:max-w-lg sm:rounded-xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                 <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-white flex-shrink-0">
                     <h3 className="font-semibold text-lg">Add from Photo</h3>
                     <button onClick={() => setIsOpen(false)} className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
@@ -90,8 +126,8 @@ export default function PantryScanner() {
                     {step === 'upload' ? (
                         <div className="space-y-6 h-full flex flex-col justify-center">
                             {image ? (
-                                <div className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50 aspect-video shadow-inner">
-                                    <img src={image} alt="Preview" className="w-full h-full object-contain" />
+                                <div className="relative rounded-xl overflow-hidden border border-gray-200 bg-gray-50 aspect-auto max-h-[60vh] shadow-inner flex items-center justify-center">
+                                    <img src={image} alt="Preview" className="max-w-full max-h-full object-contain" />
                                     <button
                                         onClick={() => setImage(null)}
                                         className="absolute top-2 right-2 bg-white/90 p-2 rounded-full hover:bg-white text-gray-700 shadow-sm backdrop-blur-sm"

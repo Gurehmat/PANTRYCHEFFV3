@@ -19,6 +19,8 @@ serve(async (req: Request) => {
       throw new Error("No image provided");
     }
 
+    console.log(`Received image size: ${Math.round(image.length / 1024)} KB`);
+
     const apiKey = Deno.env.get("GEMINI_API_KEY");
     if (!apiKey) {
       throw new Error("GEMINI_API_KEY is not set");
