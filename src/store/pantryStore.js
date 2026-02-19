@@ -78,6 +78,32 @@ export const usePantryStore = create((set, get) => ({
         }
     },
 
+    updateItem: async (id, updates) => {
+        set({ loading: true })
+        try {
+            const { data, error } = await supabase
+                .from('pantry_items')
+                .update(updates)
+                .eq('id', id)
+                .select()
+
+            if (error) throw error
+
+            set((state) => ({
+                pantryItems: state.pantryItems.map((item) =>
+                    item.id === id ? { ...item, ...data[0] } : item
+                )
+            }))
+            return { success: true }
+        } catch (error) {
+            console.error('Error updating item:', error)
+            set({ error: error.message })
+            return { success: false, error: error.message }
+        } finally {
+            set({ loading: false })
+        }
+    },
+
     deleteItem: async (id) => {
         try {
             const { error } = await supabase

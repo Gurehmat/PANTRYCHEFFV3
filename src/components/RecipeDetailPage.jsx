@@ -91,9 +91,21 @@ export default function RecipeDetailPage() {
             </Link>
 
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div className="p-8 border-b border-gray-100">
+                {/* Hero Image */}
+                {recipe.image_url && (
+                    <div className="h-64 overflow-hidden relative">
+                        <img
+                            src={recipe.image_url}
+                            alt={recipe.title}
+                            className="w-full h-full object-cover"
+                            onError={(e) => { e.target.parentElement.style.display = 'none' }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    </div>
+                )}
+                <div className="p-5 md:p-8 border-b border-gray-100">
                     <div className="flex justify-between items-start mb-4">
-                        <h1 className="text-3xl font-bold text-gray-900">{recipe.title}</h1>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{recipe.title}</h1>
                         <div className={`px-3 py-1 rounded-full text-sm font-bold border 
               ${score === 100 ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-100'}`}>
                             {score}% Match
@@ -107,7 +119,7 @@ export default function RecipeDetailPage() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-0">
-                    <div className="p-8 bg-gray-50">
+                    <div className="p-5 md:p-8 bg-gray-50">
                         <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
                             <ChefHat className="w-5 h-5 text-orange-500" />
                             Ingredients
@@ -170,7 +182,7 @@ export default function RecipeDetailPage() {
                         )}
                     </div>
 
-                    <div className="p-8">
+                    <div className="p-5 md:p-8">
                         <h2 className="text-xl font-bold text-gray-900 mb-4">Instructions</h2>
                         <ol className="space-y-6">
                             {steps.map((step, i) => (

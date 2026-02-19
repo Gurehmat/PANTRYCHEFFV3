@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import { useRecipeStore } from '../store/recipeStore'
-import recipes from '../data/recipes.json'
+import recipes from '../data/recipes_with_images.json'
 import { Database, Check, Loader2, AlertCircle } from 'lucide-react'
 
 export default function SeedButton() {
@@ -13,39 +13,40 @@ export default function SeedButton() {
         setLoading(true)
         setStatus(null)
         try {
-            // Get current user
             const { data: { user } } = await supabase.auth.getUser()
-            console.log('Current user:', user)
             if (!user) throw new Error('Must be logged in to seed database')
 
-            // Clear existing recipes to prevent duplicates
+            // Clear existing recipes
             const { error: deleteError } = await supabase
                 .from('recipes')
                 .delete()
                 .eq('user_id', user.id)
-
             if (deleteError) throw deleteError
 
-            // Prepare data with user_id and map JSON keys to database columns
+            // Helper to strip HTML tags
+            const stripHtml = (html) => {
+                if (!html) return null
+                return html.replace(/<[^>]*>?/gm, '')
+            }
+
+            // All image URLs are pre-baked into recipes_with_images.json
             const recipesToInsert = recipes.map(recipe => ({
                 user_id: user.id,
                 title: recipe.Name,
+                description: stripHtml(recipe.Description),
                 ingredients: recipe.Ingredients,
-                instructions: JSON.stringify(recipe.Method) // Store as JSON string since column is text
+                instructions: JSON.stringify(recipe.Method),
+                image_url: recipe.Image || null,
             }))
 
-            const { error } = await supabase
-                .from('recipes')
-                .insert(recipesToInsert)
-
+            const { error } = await supabase.from('recipes').insert(recipesToInsert)
             if (error) {
                 console.error('Supabase error details:', JSON.stringify(error, null, 2))
                 throw error
             }
 
-            await fetchRecipes() // Refresh the list
+            await fetchRecipes()
             setStatus('success')
-            // Reset status after 3 seconds
             setTimeout(() => setStatus(null), 3000)
         } catch (error) {
             console.error('Seeding error full object:', error)

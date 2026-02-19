@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { GoogleGenerativeAI, HarmBlockThreshold, HarmCategory } from "https://esm.sh/@google/generative-ai"
+import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3"
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -7,29 +7,35 @@ const corsHeaders = {
 }
 
 serve(async (req: Request) => {
+    // Handle CORS preflight requests
     if (req.method === 'OPTIONS') {
         return new Response('ok', { headers: corsHeaders })
     }
 
     try {
-        const { recipeTitle, missingIngredients, pantryItems } = await req.json()
         const apiKey = Deno.env.get('GEMINI_API_KEY')
-
         if (!apiKey) {
             throw new Error('GEMINI_API_KEY is not set')
         }
 
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`;
+        const { recipeTitle, missingIngredients, pantryItems } = await req.json()
+
+        if (!recipeTitle || !missingIngredients) {
+            throw new Error('Missing recipeTitle or missingIngredients in request body')
+        }
+
+        const genAI = new GoogleGenerativeAI(apiKey)
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 
         const prompt = `
       The user wants to cook "${recipeTitle}".
       They are missing these ingredients: ${missingIngredients.join(', ')}.
-      They have these items in their pantry: ${pantryItems.map((i: any) => i.name).join(', ')}.
+      They have these items in their pantry: ${pantryItems?.map((i: any) => i.name).join(', ') || 'nothing'}.
       
       Suggest 3 practical substitutions for the missing ingredients. 
       Prioritize using items from their pantry if possible, otherwise suggest common household alternatives.
       
-      Return ONLY a valid JSON array of objects with this structure:
+      Return ONLY a valid JSON array of objects with this structure, and NO markdown formatting:
       [
         {
           "missing": "ingredient name",
@@ -37,38 +43,15 @@ serve(async (req: Request) => {
           "reason": "short explanation why it works"
         }
       ]
-      
-      Do not include any markdown formatting.
     `
 
-        const payload = {
-            contents: [{
-                parts: [{ text: prompt }]
-            }],
-            safetySettings: [
-                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-            ]
-        }
+        const result = await model.generateContent(prompt)
+        const response = await result.response
+        const text = response.text()
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        })
+        console.log("Raw Gemini response:", text)
 
-        const data = await response.json()
-
-        if (!response.ok) {
-            throw new Error(data.error?.message || JSON.stringify(data))
-        }
-
-        // Extract text from Gemini response structure
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || ''
-
-        // Clean markdown JSON if present
+        // Clean markdown syntax if present (e.g. ```json ... ```)
         const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim()
 
         let substitutions
@@ -76,7 +59,7 @@ serve(async (req: Request) => {
             substitutions = JSON.parse(jsonStr)
         } catch (e) {
             console.error("Failed to parse JSON:", jsonStr)
-            throw new Error("Failed to parse Gemini response as JSON")
+            throw new Error(`Failed to parse Gemini response: ${jsonStr.substring(0, 100)}...`)
         }
 
         return new Response(JSON.stringify(substitutions), {
@@ -84,6 +67,7 @@ serve(async (req: Request) => {
             status: 200,
         })
     } catch (error: any) {
+        console.error("Function error:", error)
         return new Response(JSON.stringify({ error: error.message }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,
