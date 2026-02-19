@@ -71,7 +71,18 @@ export default function PantryScanner() {
                 body: { image: base64Image },
             })
 
-            if (error) throw error
+            if (error) {
+                // Try to get the actual error message from the response
+                let detail = error.message || 'Unknown error'
+                if (error.context?.body) {
+                    try {
+                        const errBody = await error.context.json()
+                        detail = errBody.error || detail
+                    } catch (_) { }
+                }
+                console.error('Scan function error detail:', detail)
+                throw new Error(detail)
+            }
 
             // Ensure data is an array
             const items = Array.isArray(data) ? data : []
@@ -79,7 +90,7 @@ export default function PantryScanner() {
             setStep('review')
         } catch (error) {
             console.error('Scan failed:', error)
-            alert('Failed to analyze image. Please try again.')
+            alert(`Scan failed: ${error.message || 'Please try again.'}`)
         } finally {
             setAnalyzing(false)
         }

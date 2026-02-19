@@ -13,25 +13,32 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    const body = await req.json() as { image?: string };
+    console.log("Step 1: Parsing request body...");
+    let body: { image?: string };
+    try {
+      body = await req.json() as { image?: string };
+    } catch (parseErr: any) {
+      throw new Error(`Failed to parse request body as JSON: ${parseErr.message}`);
+    }
     const image = body.image;
 
     if (!image) {
-      throw new Error("No image provided");
+      throw new Error("No image provided in body. Keys received: " + Object.keys(body).join(", "));
     }
 
-    console.log(`Received image size: ${Math.round(image.length / 1024)} KB`);
+    console.log(`Step 2: Received image size: ${Math.round(image.length / 1024)} KB`);
 
     // @ts-ignore: Deno global is available in Edge Functions
     const apiKey = Deno.env.get("GEMINI_API_KEY");
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not set");
+      throw new Error("GEMINI_API_KEY is not set. Please run: supabase secrets set GEMINI_API_KEY=your_key --project-ref vobjkyrbwjuwgnmmziim");
     }
+    console.log("Step 3: GEMINI_API_KEY found, calling Gemini API...");
 
     // Prepare the request to Gemini
-    // Using gemini-1.5-flash for speed and multimodal capabilities
+    // Using gemini-2.0-flash-lite for speed and multimodal capabilities
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: {

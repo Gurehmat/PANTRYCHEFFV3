@@ -20,7 +20,7 @@ serve(async (req) => {
         }
 
         const genAI = new GoogleGenerativeAI(apiKey)
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" })
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
 
         const prompt = `
       You are a master chef. Based on these pantry items: ${pantryItems.map((i: any) => `${i.quantity} ${i.unit} ${i.name}`).join(', ')},
