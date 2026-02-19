@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { supabase } from './lib/supabaseClient'
 import Layout from './components/Layout'
 import Auth from './components/Auth'
@@ -7,7 +7,7 @@ import Dashboard from './components/Dashboard'
 import PantryPage from './components/PantryPage'
 import RecipesPage from './components/RecipesPage'
 import RecipeDetailPage from './components/RecipeDetailPage'
-import RecipeGenerator from './components/RecipeGenerator' // Keeping for reference or eventual deletion
+import RecipeGenerator from './components/RecipeGenerator'
 
 function App() {
   const [session, setSession] = useState(null)
