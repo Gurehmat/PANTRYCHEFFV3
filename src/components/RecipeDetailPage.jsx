@@ -1,25 +1,30 @@
+
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useRecipeStore } from '../store/recipeStore'
 import { usePantryStore } from '../store/pantryStore'
+import { useShoppingListStore } from '../store/shoppingListStore'
 import { getMatchStatus } from '../utils/recipeMatching'
 import { getSubstitutions } from '../services/recipeService'
-import { ArrowLeft, Clock, ChefHat, AlertTriangle, Sparkles, Check, Loader2 } from 'lucide-react'
+import { ArrowLeft, Clock, ChefHat, AlertTriangle, Sparkles, Check, Loader2, ShoppingCart, Heart } from 'lucide-react'
 
 export default function RecipeDetailPage() {
     const { id } = useParams()
-    const { recipes, fetchRecipes } = useRecipeStore()
+    const { recipes, fetchRecipes, toggleFavorite, favorites, fetchFavorites } = useRecipeStore()
     const { pantryItems, fetchPantry } = usePantryStore()
+    const { addItem: addToShoppingList } = useShoppingListStore()
 
     const [loading, setLoading] = useState(true)
     const [submitting, setSubmitting] = useState(false)
     const [substitutions, setSubstitutions] = useState(null)
     const [error, setError] = useState(null)
+    const [addedToCart, setAddedToCart] = useState({})
 
     useEffect(() => {
         const loadData = async () => {
             if (recipes.length === 0) await fetchRecipes()
             if (pantryItems.length === 0) await fetchPantry()
+            await fetchFavorites()
             setLoading(false)
         }
         loadData()
@@ -31,6 +36,7 @@ export default function RecipeDetailPage() {
     if (!recipe) return <div className="text-center py-20">Recipe not found</div>
 
     const { score, missing, matches } = getMatchStatus(recipe.ingredients, pantryItems)
+    const isFavorite = favorites.some(f => f.recipe_id === recipe.id)
 
     const handleAskAI = async () => {
         setSubmitting(true)
@@ -42,6 +48,15 @@ export default function RecipeDetailPage() {
             setError(err.message || 'Failed to get substitutions. Please try again.')
         } finally {
             setSubmitting(false)
+        }
+    }
+
+    const handleAddToShoppingList = async (ingredient) => {
+        const result = await addToShoppingList({ name: ingredient, quantity: 1, unit: 'pc' })
+        if (result.success) {
+            setAddedToCart(prev => ({ ...prev, [ingredient]: true }))
+        } else {
+            alert(`Failed to add to shopping list: ${result.error}. WARNING: You may need to run the SQL Setup script in Supabase!`)
         }
     }
 
@@ -105,11 +120,24 @@ export default function RecipeDetailPage() {
                 )}
                 <div className="p-5 md:p-8 border-b border-gray-100">
                     <div className="flex justify-between items-start mb-4">
-                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900">{recipe.title}</h1>
-                        <div className={`px-3 py-1 rounded-full text-sm font-bold border 
-              ${score === 100 ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-100'}`}>
-                            {score}% Match
+                        <div className="flex-1">
+                            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{recipe.title}</h1>
+                            <div className={`inline - flex px - 3 py - 1 rounded - full text - sm font - bold border 
+                  ${score === 100 ? 'bg-green-100 text-green-700 border-green-200' : 'bg-orange-50 text-orange-700 border-orange-100'} `}>
+                                {score}% Match
+                            </div>
                         </div>
+                        <button
+                            onClick={async () => {
+                                const result = await toggleFavorite(recipe)
+                                if (!result.success) {
+                                    alert(`Failed to update favorites: ${result.error}. WARNING: You may need to run the SQL Setup script in Supabase!`)
+                                }
+                            }}
+                            className={`p - 3 rounded - full transition - all ${isFavorite ? 'bg-red-50 text-red-500' : 'bg-gray-50 text-gray-400 hover:text-red-500'} `}
+                        >
+                            <Heart className={`w - 6 h - 6 ${isFavorite ? 'fill-current' : ''} `} />
+                        </button>
                     </div>
                     <p className="text-gray-600 text-lg mb-4">{recipe.description}</p>
                     <div className="flex items-center gap-2 text-gray-500">
@@ -128,15 +156,27 @@ export default function RecipeDetailPage() {
                             {recipe.ingredients.map((ing, i) => {
                                 const isMissing = missing.includes(ing)
                                 return (
-                                    <li key={i} className={`flex items-start gap-3 p-2 rounded-lg ${isMissing ? 'bg-red-50/50' : 'bg-green-50/50'}`}>
-                                        {isMissing ? (
-                                            <AlertTriangle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                                        ) : (
-                                            <Check className="w-5 h-5 text-green-500 shrink-0 mt-0.5" />
+                                    <li key={i} className={`flex items - center justify - between p - 2 rounded - lg ${isMissing ? 'bg-red-50/50' : 'bg-green-50/50'} `}>
+                                        <div className="flex items-center gap-3">
+                                            {isMissing ? (
+                                                <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+                                            ) : (
+                                                <Check className="w-5 h-5 text-green-500 shrink-0" />
+                                            )}
+                                            <span className={isMissing ? 'text-red-700 font-medium' : 'text-gray-700'}>
+                                                {ing}
+                                            </span>
+                                        </div>
+                                        {isMissing && (
+                                            <button
+                                                onClick={() => handleAddToShoppingList(ing)}
+                                                disabled={addedToCart[ing]}
+                                                className={`p - 1.5 rounded - md transition - colors ${addedToCart[ing] ? 'bg-green-100 text-green-600' : 'hover:bg-red-100 text-red-400'} `}
+                                                title="Add to Shopping List"
+                                            >
+                                                {addedToCart[ing] ? <Check className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
+                                            </button>
                                         )}
-                                        <span className={isMissing ? 'text-red-700 font-medium' : 'text-gray-700'}>
-                                            {ing}
-                                        </span>
                                     </li>
                                 )
                             })}

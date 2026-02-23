@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
-import { Clock, Check, AlertTriangle, ArrowRight } from 'lucide-react'
+import { Clock, Check, AlertTriangle, ArrowRight, Heart } from 'lucide-react'
+import { useRecipeStore } from '../store/recipeStore'
 
 export default function RecipeCard({ recipe, matchStatus }) {
     const { score, missing } = matchStatus
+    const { toggleFavorite, favorites } = useRecipeStore()
+    const isFavorite = favorites.some(f => f.recipe_id === recipe.id)
 
     // Color coding based on score
     const getScoreColor = (s) => {
@@ -12,7 +15,7 @@ export default function RecipeCard({ recipe, matchStatus }) {
     }
 
     return (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col h-full group overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col h-full group overflow-hidden relative">
             {/* Recipe Image */}
             <div className="h-44 overflow-hidden bg-gradient-to-br from-orange-100 to-amber-50 flex-shrink-0 relative">
                 {recipe.image_url ? (
@@ -25,7 +28,20 @@ export default function RecipeCard({ recipe, matchStatus }) {
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-5xl">🍽️</div>
                 )}
-                <div className="absolute top-2 right-2">
+                <div className="absolute top-2 right-2 flex gap-2">
+                    <button
+                        onClick={async (e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            const result = await toggleFavorite(recipe)
+                            if (!result.success) {
+                                alert(`Failed to update favorites: ${result.error}. WARNING: You may need to run the SQL Setup script in Supabase!`)
+                            }
+                        }}
+                        className={`p-1.5 rounded-full backdrop-blur-sm transition-all ${isFavorite ? 'bg-white/90 text-red-500' : 'bg-white/60 text-gray-400 hover:text-red-500 hover:bg-white'}`}
+                    >
+                        <Heart className={`w-4 h-4 ${isFavorite ? 'fill-current' : ''}`} />
+                    </button>
                     <span className={`px-2 py-1 rounded-full text-xs font-bold border backdrop-blur-sm bg-white/80 ${getScoreColor(score)}`}>
                         {score}% Match
                     </span>

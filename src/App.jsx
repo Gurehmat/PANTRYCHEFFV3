@@ -8,6 +8,8 @@ import PantryPage from './components/PantryPage'
 import RecipesPage from './components/RecipesPage'
 import RecipeDetailPage from './components/RecipeDetailPage'
 import RecipeGenerator from './components/RecipeGenerator'
+import ShoppingListPage from './components/ShoppingListPage'
+import FavoritesPage from './components/FavoritesPage'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -44,6 +46,9 @@ function App() {
           <Route path="/pantry" element={<PantryPage />} />
           <Route path="/recipes" element={<RecipesPage />} />
           <Route path="/recipes/:id" element={<RecipeDetailPage />} />
+          <Route path="/generator" element={<RecipeGenerator />} />
+          <Route path="/shopping-list" element={<ShoppingListPage />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Layout>

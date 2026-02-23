@@ -38,6 +38,19 @@ export default function Dashboard() {
                     </Link>
                 </div>
             </div>
+
+            <div className="bg-gradient-to-br from-yellow-50 to-orange-50 p-6 rounded-xl border border-yellow-100 shadow-sm hover:border-yellow-200 transition-colors">
+                <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-yellow-500" />
+                    Magic Recipe Generator
+                </h2>
+                <p className="text-gray-600 mb-4">
+                    Don't know what to cook? Let AI invent a unique recipe based specifically on your ingredients.
+                </p>
+                <Link to="/generator" className="inline-flex items-center gap-2 bg-white text-yellow-600 px-4 py-2 rounded-lg font-bold border border-yellow-200 hover:bg-yellow-50 transition-colors">
+                    Generate a Recipe <ArrowRight className="w-4 h-4" />
+                </Link>
+            </div>
         </div>
     )
 }

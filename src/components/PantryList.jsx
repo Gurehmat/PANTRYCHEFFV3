@@ -129,7 +129,7 @@ export default function PantryList() {
                                 {!editingId && (
                                     <button
                                         onClick={() => startEditing(item)}
-                                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
                                         title="Edit item"
                                     >
                                         <Pencil className="w-4 h-4" />
@@ -137,7 +137,7 @@ export default function PantryList() {
                                 )}
                                 <button
                                     onClick={() => deleteItem(item.id)}
-                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all"
+                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
                                     title="Remove item"
                                 >
                                     <Trash2 className="w-4 h-4" />

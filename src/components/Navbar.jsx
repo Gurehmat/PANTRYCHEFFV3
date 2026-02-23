@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ChefHat, LayoutDashboard, UtensilsCrossed, Package, Menu, X } from 'lucide-react'
+import { ChefHat, LayoutDashboard, UtensilsCrossed, Package, Menu, X, Sparkles, ShoppingCart, Heart } from 'lucide-react'
 
 export default function Navbar() {
     const location = useLocation()
@@ -55,6 +55,30 @@ export default function Navbar() {
                             <UtensilsCrossed className="w-4 h-4" />
                             Recipes
                         </Link>
+
+                        <Link
+                            to="/generator"
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/generator')}`}
+                        >
+                            <Sparkles className="w-4 h-4 text-yellow-500" />
+                            Magic Recipe
+                        </Link>
+
+                        <Link
+                            to="/shopping-list"
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/shopping-list')}`}
+                        >
+                            <ShoppingCart className="w-4 h-4" />
+                            Shop
+                        </Link>
+
+                        <Link
+                            to="/favorites"
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/favorites')}`}
+                        >
+                            <Heart className="w-4 h-4 text-red-500" />
+                            Favorites
+                        </Link>
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -103,6 +127,33 @@ export default function Navbar() {
                         >
                             <UtensilsCrossed className="w-5 h-5" />
                             Recipes
+                        </Link>
+
+                        <Link
+                            to="/generator"
+                            onClick={closeMenu}
+                            className={`block px-3 py-3 rounded-md text-base font-medium flex items-center gap-2 ${isActive('/generator')}`}
+                        >
+                            <Sparkles className="w-5 h-5 text-yellow-500" />
+                            Magic Recipe
+                        </Link>
+
+                        <Link
+                            to="/shopping-list"
+                            onClick={closeMenu}
+                            className={`block px-3 py-3 rounded-md text-base font-medium flex items-center gap-2 ${isActive('/shopping-list')}`}
+                        >
+                            <ShoppingCart className="w-5 h-5" />
+                            Shopping List
+                        </Link>
+
+                        <Link
+                            to="/favorites"
+                            onClick={closeMenu}
+                            className={`block px-3 py-3 rounded-md text-base font-medium flex items-center gap-2 ${isActive('/favorites')}`}
+                        >
+                            <Heart className="w-5 h-5 text-red-500" />
+                            Favorites
                         </Link>
                     </div>
                 </div>
