@@ -10,6 +10,7 @@ import RecipeDetailPage from './components/RecipeDetailPage'
 import RecipeGenerator from './components/RecipeGenerator'
 import ShoppingListPage from './components/ShoppingListPage'
 import FavoritesPage from './components/FavoritesPage'
+import LandingPage from './components/LandingPage'
 
 function App() {
   const [session, setSession] = useState(null)
@@ -34,24 +35,30 @@ function App() {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>
   }
 
-  if (!session) {
-    return <Auth />
-  }
-
   return (
     <Router>
-      <Layout>
+      {!session ? (
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/pantry" element={<PantryPage />} />
-          <Route path="/recipes" element={<RecipesPage />} />
-          <Route path="/recipes/:id" element={<RecipeDetailPage />} />
-          <Route path="/generator" element={<RecipeGenerator />} />
-          <Route path="/shopping-list" element={<ShoppingListPage />} />
-          <Route path="/favorites" element={<FavoritesPage />} />
+          {/* Public Routes */}
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Layout>
+      ) : (
+        <Layout>
+          {/* Protected Routes */}
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/pantry" element={<PantryPage />} />
+            <Route path="/recipes" element={<RecipesPage />} />
+            <Route path="/recipes/:id" element={<RecipeDetailPage />} />
+            <Route path="/generator" element={<RecipeGenerator />} />
+            <Route path="/shopping-list" element={<ShoppingListPage />} />
+            <Route path="/favorites" element={<FavoritesPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
+      )}
     </Router>
   )
 }

@@ -30,10 +30,15 @@ export default function RecipeDetailPage() {
         loadData()
     }, [])
 
-    if (loading) return <div className="text-center py-20">Loading...</div>
+    if (loading) return (
+        <div className="flex flex-col items-center justify-center py-20 text-orange-500">
+            <Loader2 className="w-10 h-10 animate-spin mb-4" />
+            <p className="font-medium text-gray-600">Loading recipe details...</p>
+        </div>
+    )
 
     const recipe = recipes.find(r => r.id === id)
-    if (!recipe) return <div className="text-center py-20">Recipe not found</div>
+    if (!recipe) return <div className="text-center py-20 text-gray-500">Recipe not found</div>
 
     const { score, missing, matches } = getMatchStatus(recipe.ingredients, pantryItems)
     const isFavorite = favorites.some(f => f.recipe_id === recipe.id)
@@ -113,7 +118,10 @@ export default function RecipeDetailPage() {
                             src={recipe.image_url}
                             alt={recipe.title}
                             className="w-full h-full object-cover"
-                            onError={(e) => { e.target.parentElement.style.display = 'none' }}
+                            onError={(e) => { 
+                                e.target.onerror = null; 
+                                e.target.src = 'https://placehold.co/800x400/orange/white?text=Recipe+Image'
+                            }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     </div>
@@ -230,7 +238,9 @@ export default function RecipeDetailPage() {
                                     <span className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm">
                                         {i + 1}
                                     </span>
-                                    <p className="text-gray-700 leading-relaxed mt-1">{step}</p>
+                                    <p className="text-gray-700 leading-relaxed mt-1">
+                                        {step.replace(/<[^>]*>?/gm, '').trim()}
+                                    </p>
                                 </li>
                             ))}
                         </ol>

@@ -23,7 +23,10 @@ export default function RecipeCard({ recipe, matchStatus }) {
                         src={recipe.image_url}
                         alt={recipe.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => { e.target.style.display = 'none' }}
+                        onError={(e) => { 
+                            e.target.onerror = null; 
+                            e.target.src = 'https://placehold.co/600x400/orange/white?text=Recipe+Image'
+                        }}
                     />
                 ) : (
                     <div className="w-full h-full flex items-center justify-center text-5xl">🍽️</div>

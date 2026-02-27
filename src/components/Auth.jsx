@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
-import { Loader2, ChefHat } from 'lucide-react'
+import { Loader2, ChefHat, ArrowLeft } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 export default function Auth() {
     const [loading, setLoading] = useState(false)
@@ -39,7 +40,10 @@ export default function Auth() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="relative min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <Link to="/" className="absolute top-8 left-8 flex items-center gap-2 text-gray-500 hover:text-orange-600 transition-colors">
+                <ArrowLeft className="w-5 h-5" /> Back to Home
+            </Link>
             <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full border border-orange-100">
                 <div className="flex flex-col items-center mb-8">
                     <div className="bg-orange-500 p-3 rounded-xl mb-4">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Trash2, Calendar, Package, Pencil } from 'lucide-react'
+import { Trash2, Calendar, Package, Pencil, Loader2 } from 'lucide-react'
 import { usePantryStore } from '../store/pantryStore'
 
 export default function PantryList() {
@@ -36,7 +36,12 @@ export default function PantryList() {
     }
 
     if (loading && pantryItems.length === 0) {
-        return <div className="text-center py-10 text-gray-500">Loading pantry...</div>
+        return (
+            <div className="flex flex-col items-center justify-center py-20 text-orange-500 bg-white rounded-xl shadow-sm border border-gray-100 h-full">
+                <Loader2 className="w-8 h-8 animate-spin mb-4" />
+                <p className="font-medium text-gray-600">Loading pantry...</p>
+            </div>
+        )
     }
 
     return (

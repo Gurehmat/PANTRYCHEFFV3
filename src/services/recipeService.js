@@ -6,13 +6,23 @@ export const generateRecipe = async (pantryItems) => {
       body: { pantryItems }
     })
 
-    if (error) throw error
+    if (error) {
+      let rawError = error.message;
+      if (error.context && typeof error.context.text === 'function') {
+        const text = await error.context.text();
+        rawError = `Response: ${text}`;
+      } else if (error.context) {
+        rawError = `Context: ${JSON.stringify(error.context)}`;
+      }
+      throw new Error(`Edge Function Failed: ${rawError}`);
+    }
     return data
   } catch (error) {
     console.error('Error generating recipe:', error)
     throw new Error(error.message || 'Failed to generate recipe')
   }
 }
+
 
 
 

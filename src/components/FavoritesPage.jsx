@@ -1,14 +1,23 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useRecipeStore } from '../store/recipeStore'
-import { Heart, ArrowRight, Clock } from 'lucide-react'
+import { Heart, ArrowRight, Clock, Loader2 } from 'lucide-react'
 import RecipeCard from './RecipeCard'
 
 export default function FavoritesPage() {
-    const { favorites, fetchFavorites, loading } = useRecipeStore()
+    const { favorites, fetchFavorites, recipes, fetchRecipes } = useRecipeStore()
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetchFavorites()
+        const loadData = async () => {
+            setLoading(true)
+            await fetchFavorites()
+            if (recipes.length === 0) {
+                await fetchRecipes()
+            }
+            setLoading(false)
+        }
+        loadData()
     }, [])
 
     return (
@@ -24,7 +33,10 @@ export default function FavoritesPage() {
             </div>
 
             {loading ? (
-                <div className="text-center py-20 text-gray-500">Loading your favorites...</div>
+                <div className="flex flex-col items-center justify-center py-20 text-orange-500">
+                    <Loader2 className="w-10 h-10 animate-spin mb-4" />
+                    <p className="font-medium text-gray-600">Loading your favorites...</p>
+                </div>
             ) : favorites.length === 0 ? (
                 <div className="text-center py-20 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                     <Heart className="w-12 h-12 text-gray-300 mx-auto mb-4" />
@@ -40,15 +52,10 @@ export default function FavoritesPage() {
             ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {favorites.map(fav => {
-                        const recipe = fav.recipe_data || { id: fav.recipe_id, ...fav.recipe_data }
-                        // If it's a linked recipe, we might not have full data here if we just fetched favorites.
-                        // Ideally we should join with recipes table or fetch valid recipes. 
-                        // For MVP, we assume recipe_data is populated if it's external, 
-                        // or we rely on the component to handle ID only? 
-                        // Actually, my store fetchFavorites only selects recipe_id, recipe_data.
-                        // I need to fetch the ACTUAL recipe details if it's an ID.
-                        // Let's rely on recipe_data being null for DB recipes and handle it.
-                        // WAIT: fetchFavorites should probably join or I need to find it in `recipes` array.
+                        let recipe = fav.recipe_data
+                        if (!recipe) {
+                            recipe = recipes.find(r => r.id === fav.recipe_id) || { id: fav.recipe_id }
+                        }
 
                         return (
                             <div key={fav.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useShoppingListStore } from '../store/shoppingListStore'
-import { Plus, Trash2, CheckCircle, Circle, ShoppingCart } from 'lucide-react'
+import { Plus, Trash2, CheckCircle, Circle, ShoppingCart, Loader2 } from 'lucide-react'
 
 export default function ShoppingListPage() {
     const { items, fetchItems, addItem, toggleItem, deleteItem, loading } = useShoppingListStore()
@@ -48,6 +48,12 @@ export default function ShoppingListPage() {
                 </form>
 
                 <div className="space-y-4">
+                    {loading && (
+                        <div className="flex flex-col items-center justify-center py-10 text-orange-500">
+                            <Loader2 className="w-8 h-8 animate-spin mb-4" />
+                            <p className="font-medium text-gray-600">Loading shopping list...</p>
+                        </div>
+                    )}
                     {items.length === 0 && !loading && (
                         <div className="text-center py-8 text-gray-400">
                             Your list is empty. Time to plan a meal?
