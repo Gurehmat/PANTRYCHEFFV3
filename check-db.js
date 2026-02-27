@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
 import { join } from 'path'
+import process from 'node:process'
 
 dotenv.config({ path: join(process.cwd(), '.env') })
 

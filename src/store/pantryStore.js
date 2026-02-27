@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabaseClient'
 
-export const usePantryStore = create((set, get) => ({
+export const usePantryStore = create((set) => ({
     pantryItems: [],
     loading: false,
     error: null,

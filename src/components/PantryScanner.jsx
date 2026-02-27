@@ -69,6 +69,9 @@ export default function PantryScanner() {
 
             const { data, error } = await supabase.functions.invoke('scan-pantry', {
                 body: { image: base64Image },
+                headers: {
+                    Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+                },
             })
 
             if (error) {

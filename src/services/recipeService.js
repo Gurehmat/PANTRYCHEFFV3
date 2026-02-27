@@ -3,7 +3,10 @@ import { supabase } from '../lib/supabaseClient'
 export const generateRecipe = async (pantryItems) => {
   try {
     const { data, error } = await supabase.functions.invoke('generate-recipe', {
-      body: { pantryItems }
+      body: { pantryItems },
+      headers: {
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
     })
 
     if (error) {

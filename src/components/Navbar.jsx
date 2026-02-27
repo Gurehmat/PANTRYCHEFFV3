@@ -33,6 +33,14 @@ export default function Navbar() {
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center gap-1">
                         <Link
+                            to="/home"
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/home')}`}
+                        >
+                            <Sparkles className="w-4 h-4" />
+                            Home
+                        </Link>
+
+                        <Link
                             to="/"
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/')}`}
                         >
@@ -102,6 +110,15 @@ export default function Navbar() {
             {isMenuOpen && (
                 <div className="md:hidden border-t border-gray-100 bg-white">
                     <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                        <Link
+                            to="/home"
+                            onClick={closeMenu}
+                            className={`block px-3 py-3 rounded-md text-base font-medium flex items-center gap-2 ${isActive('/home')}`}
+                        >
+                            <Sparkles className="w-5 h-5" />
+                            Home
+                        </Link>
+
                         <Link
                             to="/"
                             onClick={closeMenu}

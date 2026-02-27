@@ -49,6 +49,7 @@ function App() {
           {/* Protected Routes */}
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/home" element={<LandingPage />} />
             <Route path="/pantry" element={<PantryPage />} />
             <Route path="/recipes" element={<RecipesPage />} />
             <Route path="/recipes/:id" element={<RecipeDetailPage />} />

@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Environment & secrets
+.env
+.env.local
+supabase/.temp
+verification_result.json
+debug_output.txt
+models_list.json
+payload.json
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -6,11 +6,6 @@ export const normalize = (str) => {
         .trim()
 }
 
-// Helper to escape regex special characters
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
-}
-
 export const getMatchStatus = (recipeIngredients, pantryItems) => {
     const normalize = (str) => {
         if (!str) return ''

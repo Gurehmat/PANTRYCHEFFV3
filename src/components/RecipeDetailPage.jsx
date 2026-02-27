@@ -40,7 +40,7 @@ export default function RecipeDetailPage() {
     const recipe = recipes.find(r => r.id === id)
     if (!recipe) return <div className="text-center py-20 text-gray-500">Recipe not found</div>
 
-    const { score, missing, matches } = getMatchStatus(recipe.ingredients, pantryItems)
+    const { score, missing } = getMatchStatus(recipe.ingredients, pantryItems)
     const isFavorite = favorites.some(f => f.recipe_id === recipe.id)
 
     const handleAskAI = async () => {
@@ -90,7 +90,7 @@ export default function RecipeDetailPage() {
                         }
                         return step;
                     });
-                } catch (e) {
+                } catch {
                     // Fallback if JSON parse fails
                     steps = trimmed.split(/(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
                 }
@@ -99,7 +99,7 @@ export default function RecipeDetailPage() {
                 steps = trimmed.split(/\n|(?<=[.!?])\s+/).filter(s => s.trim().length > 0);
             }
         }
-    } catch (e) {
+    } catch {
         steps = [recipe.instructions]
     }
 

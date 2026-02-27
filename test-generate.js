@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import * as dotenv from 'dotenv'
 import { join } from 'path'
+import process from 'node:process'
 
 dotenv.config({ path: join(process.cwd(), '.env') })
 
@@ -14,7 +15,7 @@ async function testGenerate() {
   try {
     for (let i = 0; i < 3; i++) {
         console.log(`Attempt ${i + 1}...`)
-        const { data, error } = await supabase.functions.invoke('generate-recipe', {
+        const { error } = await supabase.functions.invoke('generate-recipe', {
           body: { pantryItems: [{ name: 'chicken', quantity: 1, unit: 'lb' }] }
         })
         if (error) {

@@ -1,36 +1,40 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { ChefHat, Sparkles, Camera, ArrowRight, HeartPulse, ShieldCheck, Check } from 'lucide-react'
 
 export default function LandingPage() {
+    const location = useLocation()
+    const isLoggedInHome = location.pathname === '/home'
+
     return (
         <div className="bg-white">
             {/* Header / Navbar Replacement for Guests */}
-            <header className="absolute inset-x-0 top-0 z-50">
-                <nav className="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
-                    <div className="flex lg:flex-1">
-                        <span className="flex items-center gap-2 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-red-600">
-                            <ChefHat className="w-8 h-8 text-orange-500" />
-                            PantryCheff
-                        </span>
-                    </div>
-                    <div className="flex flex-1 justify-end gap-4">
-                        <Link to="/auth" className="text-sm font-semibold leading-6 text-gray-900 px-4 py-2 hover:bg-gray-50 rounded-lg transition-colors">
-                            Log in
-                        </Link>
-                        <Link to="/auth" className="text-sm font-semibold leading-6 text-white bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg shadow-sm transition-all active:scale-95">
-                            Sign up <span aria-hidden="true">&rarr;</span>
-                        </Link>
-                    </div>
-                </nav>
-            </header>
+            {!isLoggedInHome && (
+                <header className="absolute inset-x-0 top-0 z-50">
+                    <nav className="flex items-center justify-between p-6 lg:px-8" aria-label="Global">
+                        <div className="flex lg:flex-1">
+                            <span className="flex items-center gap-2 text-2xl font-bold bg-clip-text text-transparent bg-linear-to-r from-orange-500 to-red-600">
+                                <ChefHat className="w-8 h-8 text-orange-500" />
+                                PantryCheff
+                            </span>
+                        </div>
+                        <div className="flex flex-1 justify-end gap-4">
+                            <Link to="/auth" className="text-sm font-semibold leading-6 text-gray-900 px-4 py-2 hover:bg-gray-50 rounded-lg transition-colors">
+                                Log in
+                            </Link>
+                            <Link to="/auth" className="text-sm font-semibold leading-6 text-white bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-lg shadow-sm transition-all active:scale-95">
+                                Sign up <span aria-hidden="true">&rarr;</span>
+                            </Link>
+                        </div>
+                    </nav>
+                </header>
+            )}
 
             <main className="isolate">
                 {/* Hero section */}
-                <div className="relative pt-14 flex items-center min-h-screen">
+                <div className={`relative flex items-center min-h-screen ${isLoggedInHome ? 'pt-6' : 'pt-14'}`}>
                     {/* Background blob decorations */}
                     <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
-                        <div className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-amber-200 to-orange-400 opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style={{ clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)' }}></div>
+                        <div className="relative left-[calc(50%-11rem)] aspect-1155/678 w-144.5 -translate-x-1/2 rotate-30 bg-linear-to-tr from-amber-200 to-orange-400 opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style={{ clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)' }}></div>
                     </div>
 
                     <div className="py-24 sm:py-32 lg:pb-40 px-6 lg:px-8 max-w-7xl mx-auto w-full">
