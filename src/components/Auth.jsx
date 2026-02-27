@@ -14,7 +14,9 @@ export default function Auth({ authEvent }) {
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
 
-    const isPasswordRecovery = authEvent === 'PASSWORD_RECOVERY'
+    const hash = typeof window !== 'undefined' ? window.location.hash : ''
+    const isRecoveryHash = hash.includes('type=recovery')
+    const isPasswordRecovery = authEvent === 'PASSWORD_RECOVERY' || isRecoveryHash
 
     const handleAuth = async (e) => {
         e.preventDefault()
@@ -88,16 +90,14 @@ export default function Auth({ authEvent }) {
 
         try {
             setLoading(true)
-            const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}`,
-            })
+            const { error } = await supabase.auth.resetPasswordForEmail(email)
             if (error) throw error
             setMessage('Password reset email sent. Check your inbox.')
-        } catch (err) {
+          } catch (err) {
             setError(err.message || 'Failed to send reset email.')
-        } finally {
+          } finally {
             setLoading(false)
-        }
+          }
     }
 
     return (
