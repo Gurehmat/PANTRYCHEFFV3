@@ -89,7 +89,7 @@ export default function Auth({ authEvent }) {
         try {
             setLoading(true)
             const { error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: `${window.location.origin}/#/auth`,
+                redirectTo: `${window.location.origin}`,
             })
             if (error) throw error
             setMessage('Password reset email sent. Check your inbox.')

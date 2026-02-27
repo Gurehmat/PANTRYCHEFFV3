@@ -47,12 +47,12 @@ export default function Navbar() {
             <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
                 <div className="flex flex-wrap items-center justify-between gap-3 py-2">
                     {/* Logo */}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-shrink-0">
                         <Link to="/" className="flex items-center gap-2 group" onClick={closeMenu}>
                             <div className="bg-orange-500 p-2 rounded-lg group-hover:bg-orange-600 transition-colors">
                                 <ChefHat className="w-6 h-6 text-white" />
                             </div>
-                            <span className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                            <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent whitespace-nowrap">
                                 PantryCheff
                             </span>
                         </Link>
