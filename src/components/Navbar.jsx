@@ -52,7 +52,7 @@ export default function Navbar() {
                             <div className="bg-orange-500 p-2 rounded-lg group-hover:bg-orange-600 transition-colors">
                                 <ChefHat className="w-6 h-6 text-white" />
                             </div>
-                            <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent whitespace-nowrap">
+                            <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
                                 PantryCheff
                             </span>
                         </Link>
