@@ -6,7 +6,7 @@ export default function LandingPage() {
     const isLoggedInHome = location.pathname === '/home'
 
     return (
-        <div className="bg-white">
+        <div className="bg-gradient-to-b from-orange-50 via-white to-white min-h-screen">
             {/* Header / Navbar Replacement for Guests */}
             {!isLoggedInHome && (
                 <header className="absolute inset-x-0 top-0 z-50">
@@ -31,13 +31,13 @@ export default function LandingPage() {
 
             <main className="isolate">
                 {/* Hero section */}
-                <div className={`relative flex items-center min-h-screen ${isLoggedInHome ? 'pt-6' : 'pt-14'}`}>
+                <div className={`relative flex items-center ${isLoggedInHome ? 'pt-6' : 'pt-14'} min-h-screen`}>
                     {/* Background blob decorations */}
                     <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
                         <div className="relative left-[calc(50%-11rem)] aspect-1155/678 w-144.5 -translate-x-1/2 rotate-30 bg-linear-to-tr from-amber-200 to-orange-400 opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style={{ clipPath: 'polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)' }}></div>
                     </div>
 
-                    <div className="py-24 sm:py-32 lg:pb-40 px-6 lg:px-8 max-w-7xl mx-auto w-full">
+                    <div className="py-16 sm:py-24 lg:py-32 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
                         <div className="mx-auto max-w-2xl text-center">
                             <div className="hidden sm:mb-8 sm:flex sm:justify-center">
                                 <div className="relative rounded-full px-3 py-1 text-sm leading-6 text-gray-600 ring-1 ring-gray-900/10 hover:ring-gray-900/20 shadow-sm backdrop-blur-sm bg-white/50">
@@ -69,7 +69,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* Features Section */}
-                <div id="features" className="mx-auto max-w-7xl px-6 lg:px-8 py-24 sm:py-32">
+                <div id="features" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
                     <div className="mx-auto max-w-2xl lg:text-center">
                         <h2 className="text-base font-semibold leading-7 text-orange-600">Cook faster</h2>
                         <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Everything you need to master your kitchen</p>
@@ -124,7 +124,7 @@ export default function LandingPage() {
 
                 {/* Call to action */}
                 <div className="bg-orange-50">
-                    <div className="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
+                    <div className="px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
                         <div className="mx-auto max-w-2xl text-center">
                             <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                                 Ready to transform your cooking?

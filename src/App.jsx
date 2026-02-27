@@ -15,6 +15,7 @@ import LandingPage from './components/LandingPage'
 function App() {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [authEvent, setAuthEvent] = useState(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -24,8 +25,9 @@ function App() {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
+      setAuthEvent(event)
     })
 
     return () => subscription.unsubscribe()
@@ -37,7 +39,12 @@ function App() {
 
   return (
     <Router>
-      {!session ? (
+      {authEvent === 'PASSWORD_RECOVERY' ? (
+        <Routes>
+          <Route path="/auth" element={<Auth authEvent={authEvent} />} />
+          <Route path="*" element={<Navigate to="/auth" replace />} />
+        </Routes>
+      ) : !session ? (
         <Routes>
           {/* Public Routes */}
           <Route path="/" element={<LandingPage />} />

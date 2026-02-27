@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { ChefHat, LayoutDashboard, UtensilsCrossed, Package, Menu, X, Sparkles, ShoppingCart, Heart } from 'lucide-react'
+import { supabase } from '../lib/supabaseClient'
 
 export default function Navbar() {
     const location = useLocation()
@@ -14,10 +15,37 @@ export default function Navbar() {
 
     const closeMenu = () => setIsMenuOpen(false)
 
+    const handleLogout = async () => {
+        await supabase.auth.signOut()
+        closeMenu()
+    }
+
+    const handleDeleteAccount = async () => {
+        const confirmed = window.confirm(
+            'Are you sure you want to delete your account? This will permanently remove your data and cannot be undone.',
+        )
+        if (!confirmed) return
+
+        try {
+            const { error } = await supabase.functions.invoke('delete-account')
+            if (error) {
+                console.error('Delete account error:', error)
+                alert(error.message || 'Failed to delete account.')
+                return
+            }
+            await supabase.auth.signOut()
+        } catch (err) {
+            console.error('Delete account error:', err)
+            alert(err.message || 'Failed to delete account.')
+        } finally {
+            closeMenu()
+        }
+    }
+
     return (
         <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between h-16">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+                <div className="flex flex-wrap items-center justify-between gap-3 py-2">
                     {/* Logo */}
                     <div className="flex items-center gap-2">
                         <Link to="/" className="flex items-center gap-2 group" onClick={closeMenu}>
@@ -31,7 +59,7 @@ export default function Navbar() {
                     </div>
 
                     {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center gap-1">
+                    <div className="hidden md:flex items-center gap-1 flex-wrap justify-end">
                         <Link
                             to="/home"
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/home')}`}
@@ -87,10 +115,26 @@ export default function Navbar() {
                             <Heart className="w-4 h-4 text-red-500" />
                             Favorites
                         </Link>
+
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="ml-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-600 border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                        >
+                            Log out
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleDeleteAccount}
+                            className="ml-2 px-4 py-2 rounded-lg text-sm font-medium text-red-600 border border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors"
+                        >
+                            Delete account
+                        </button>
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="flex items-center md:hidden">
+                    <div className="flex items-center md:hidden ml-auto">
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-orange-500"
@@ -113,7 +157,7 @@ export default function Navbar() {
                         <Link
                             to="/home"
                             onClick={closeMenu}
-                            className={`block px-3 py-3 rounded-md text-base font-medium flex items-center gap-2 ${isActive('/home')}`}
+                            className={`flex items-center gap-2 px-3 py-3 rounded-md text-base font-medium ${isActive('/home')}`}
                         >
                             <Sparkles className="w-5 h-5" />
                             Home
@@ -122,7 +166,7 @@ export default function Navbar() {
                         <Link
                             to="/"
                             onClick={closeMenu}
-                            className={`block px-3 py-3 rounded-md text-base font-medium flex items-center gap-2 ${isActive('/')}`}
+                            className={`flex items-center gap-2 px-3 py-3 rounded-md text-base font-medium ${isActive('/')}`}
                         >
                             <LayoutDashboard className="w-5 h-5" />
                             Dashboard
@@ -131,7 +175,7 @@ export default function Navbar() {
                         <Link
                             to="/pantry"
                             onClick={closeMenu}
-                            className={`block px-3 py-3 rounded-md text-base font-medium flex items-center gap-2 ${isActive('/pantry')}`}
+                            className={`flex items-center gap-2 px-3 py-3 rounded-md text-base font-medium ${isActive('/pantry')}`}
                         >
                             <Package className="w-5 h-5" />
                             My Pantry
@@ -140,7 +184,7 @@ export default function Navbar() {
                         <Link
                             to="/recipes"
                             onClick={closeMenu}
-                            className={`block px-3 py-3 rounded-md text-base font-medium flex items-center gap-2 ${isActive('/recipes')}`}
+                            className={`flex items-center gap-2 px-3 py-3 rounded-md text-base font-medium ${isActive('/recipes')}`}
                         >
                             <UtensilsCrossed className="w-5 h-5" />
                             Recipes
@@ -149,7 +193,7 @@ export default function Navbar() {
                         <Link
                             to="/generator"
                             onClick={closeMenu}
-                            className={`block px-3 py-3 rounded-md text-base font-medium flex items-center gap-2 ${isActive('/generator')}`}
+                            className={`flex items-center gap-2 px-3 py-3 rounded-md text-base font-medium ${isActive('/generator')}`}
                         >
                             <Sparkles className="w-5 h-5 text-yellow-500" />
                             Magic Recipe
@@ -158,7 +202,7 @@ export default function Navbar() {
                         <Link
                             to="/shopping-list"
                             onClick={closeMenu}
-                            className={`block px-3 py-3 rounded-md text-base font-medium flex items-center gap-2 ${isActive('/shopping-list')}`}
+                            className={`flex items-center gap-2 px-3 py-3 rounded-md text-base font-medium ${isActive('/shopping-list')}`}
                         >
                             <ShoppingCart className="w-5 h-5" />
                             Shopping List
@@ -167,11 +211,27 @@ export default function Navbar() {
                         <Link
                             to="/favorites"
                             onClick={closeMenu}
-                            className={`block px-3 py-3 rounded-md text-base font-medium flex items-center gap-2 ${isActive('/favorites')}`}
+                            className={`flex items-center gap-2 px-3 py-3 rounded-md text-base font-medium ${isActive('/favorites')}`}
                         >
                             <Heart className="w-5 h-5 text-red-500" />
                             Favorites
                         </Link>
+
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="mt-2 w-full text-left flex items-center gap-2 px-3 py-3 rounded-md text-base font-medium text-gray-600 border-t border-gray-100"
+                        >
+                            Log out
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={handleDeleteAccount}
+                            className="w-full text-left flex items-center gap-2 px-3 py-3 rounded-md text-base font-medium text-red-600 border-t border-red-100"
+                        >
+                            Delete account
+                        </button>
                     </div>
                 </div>
             )}
