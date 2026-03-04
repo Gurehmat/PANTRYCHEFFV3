@@ -6,7 +6,7 @@ const recipes = JSON.parse(data)
 
 const sampleUrls = recipes.slice(0, 10).map(r => r.Image)
 
-async function checkUrl(url) {
+async function checkUrl(url) {https://supabase.com/dashboard/project/vobjkyrbwjuwgnmmziim/auth/templates/confirm-sign-up
   return new Promise((resolve) => {
     https.get(url, (res) => {
       resolve({ url, status: res.statusCode })

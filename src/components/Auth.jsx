@@ -29,6 +29,9 @@ export default function Auth({ authEvent }) {
                 const { error } = await supabase.auth.signUp({
                     email,
                     password,
+                    options: {
+                        emailRedirectTo: `${window.location.origin}${window.location.pathname}#/auth`
+                    }
                 })
                 if (error) throw error
                 setMessage('Check your email for the confirmation link!')
@@ -90,7 +93,9 @@ export default function Auth({ authEvent }) {
 
         try {
             setLoading(true)
-            const { error } = await supabase.auth.resetPasswordForEmail(email)
+            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: `${window.location.origin}${window.location.pathname}#/auth`
+            })
             if (error) throw error
             setMessage('Password reset email sent. Check your inbox.')
           } catch (err) {
