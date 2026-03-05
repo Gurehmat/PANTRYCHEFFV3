@@ -22,10 +22,13 @@ export default function RecipeDetailPage() {
 
     useEffect(() => {
         const loadData = async () => {
-            if (recipes.length === 0) await fetchRecipes()
-            if (pantryItems.length === 0) await fetchPantry()
-            await fetchFavorites()
-            setLoading(false)
+            try {
+                if (recipes.length === 0) await fetchRecipes()
+                if (pantryItems.length === 0) await fetchPantry()
+                await fetchFavorites()
+            } finally {
+                setLoading(false)
+            }
         }
         loadData()
     }, [])
@@ -40,7 +43,7 @@ export default function RecipeDetailPage() {
     const recipe = recipes.find(r => r.id === id)
     if (!recipe) return <div className="text-center py-20 text-gray-500">Recipe not found</div>
 
-    const { score, missing } = getMatchStatus(recipe.ingredients, pantryItems)
+    const { score, missing } = getMatchStatus(recipe.ingredients || [], pantryItems)
     const isFavorite = favorites.some(f => f.recipe_id === recipe.id)
 
     const handleAskAI = async () => {

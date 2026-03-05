@@ -23,33 +23,130 @@ function App() {
   const [authEvent, setAuthEvent] = useState(null)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setLoading(false)
-    })
+    // If URL has code= or type=recovery (in query or hash), set flag so we keep showing reset-password after exchange
+    if (typeof window !== 'undefined') {
+      const q = window.location.search
+      const h = window.location.hash
+      if (q.includes('code=') || q.includes('type=recovery') || h.includes('code=') || h.includes('type=recovery')) {
+        sessionStorage.setItem(RECOVERY_FLAG_KEY, '1')
+      }
+    }
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, session) => {
+    // Timeout so mobile/slow networks don't stick on "Loading..." if getSession hangs (e.g. storage issues)
+    const loadTimeout = setTimeout(() => setLoading(false), 6000)
+
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        setSession(session)
+        setLoading(false)
+      })
+      .catch(() => {
+        setSession(null)
+        setLoading(false)
+      })
+      .finally(() => clearTimeout(loadTimeout))
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session)
       setAuthEvent(event)
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      clearTimeout(loadTimeout)
+      subscription?.unsubscribe()
+    }
   }, [])
+
+  // When stuck on "Confirming..." (recovery URL but no session), manually exchange the code for a session.
+  // Supabase may not auto-detect the code when it's in the hash (HashRouter).
+  const [recoveryTimedOut, setRecoveryTimedOut] = useState(false)
+  useEffect(() => {
+    if (!(isRecoverySession && !session) || recoveryTimedOut) return
+
+    const getCodeFromUrl = () => {
+      const params = new URLSearchParams(window.location.search)
+      let code = params.get('code')
+      if (code) return code
+      const hash = window.location.hash
+      const hashParams = new URLSearchParams(hash.split('?')[1] || '')
+      return hashParams.get('code')
+    }
+
+    const code = getCodeFromUrl()
+    if (code) {
+      supabase.auth
+        .exchangeCodeForSession(code)
+        .then(({ data }) => {
+          const session = data?.session
+          if (session) {
+            setSession(session)
+            setAuthEvent('PASSWORD_RECOVERY')
+            const base = window.location.origin + window.location.pathname
+            window.history.replaceState(null, '', base + '#/auth/reset-password')
+          } else {
+            setRecoveryTimedOut(true)
+          }
+        })
+        .catch(() => setRecoveryTimedOut(true))
+      return
+    }
+
+    // No code in URL: wait for session or timeout after 12s
+    const t = setTimeout(() => {
+      setRecoveryTimedOut(true)
+      if (typeof window !== 'undefined') sessionStorage.removeItem(RECOVERY_FLAG_KEY)
+    }, 12000)
+    return () => clearTimeout(t)
+  }, [isRecoverySession, session, recoveryTimedOut])
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>
   }
 
-  // When user lands from "reset password" email link: show only the set-new-password page
+  // When user lands from "reset password" email link: show only the set-new-password page.
+  // Detect: PASSWORD_RECOVERY event, or session + we set the flag before sending the email,
+  // or URL has ?code= (PKCE) so Supabase redirected here for recovery (hash may be missing).
+  const hasRecoveryFlag =
+    typeof window !== 'undefined' && !!sessionStorage.getItem(RECOVERY_FLAG_KEY)
+  const hasRecoveryCodeInUrl =
+    typeof window !== 'undefined' &&
+    (window.location.search.includes('code=') ||
+      window.location.search.includes('type=recovery') ||
+      window.location.hash.includes('code=') ||
+      window.location.hash.includes('type=recovery'))
   const isRecoverySession =
     authEvent === 'PASSWORD_RECOVERY' ||
-    (!!session && typeof window !== 'undefined' && !!sessionStorage.getItem(RECOVERY_FLAG_KEY))
+    (!!session && hasRecoveryFlag) ||
+    hasRecoveryCodeInUrl
+
+  // Only show reset-password form when we have a session (recovery link has been exchanged).
+  // Otherwise show "Confirming link..." so we don't call updateUser without a session.
+  const recoveryReady = isRecoverySession && !!session
 
   return (
     <Router>
-      {isRecoverySession ? (
+      {isRecoverySession && !session ? (
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-amber-50 to-orange-50 p-4">
+          {recoveryTimedOut ? (
+            <>
+              <p className="text-gray-700 font-medium">Reset link expired or invalid</p>
+              <p className="text-sm text-gray-500 text-center">Please request a new password reset link.</p>
+              <a
+                href="#/auth/forgot-password"
+                className="mt-2 text-orange-600 font-medium hover:underline"
+              >
+                Request new link →
+              </a>
+            </>
+          ) : (
+            <>
+              <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full" />
+              <p className="text-gray-600">Confirming your reset link…</p>
+              <p className="text-sm text-gray-500">If this takes more than a few seconds, your link may have expired.</p>
+            </>
+          )}
+        </div>
+      ) : recoveryReady ? (
         <Routes>
           <Route path="/auth/reset-password" element={<ResetPasswordPage recoveryFlagKey={RECOVERY_FLAG_KEY} />} />
           <Route path="*" element={<Navigate to="/auth/reset-password" replace />} />

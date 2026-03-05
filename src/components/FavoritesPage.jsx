@@ -11,11 +11,12 @@ export default function FavoritesPage() {
     useEffect(() => {
         const loadData = async () => {
             setLoading(true)
-            await fetchFavorites()
-            if (recipes.length === 0) {
-                await fetchRecipes()
+            try {
+                await fetchFavorites()
+                if (recipes.length === 0) await fetchRecipes()
+            } finally {
+                setLoading(false)
             }
-            setLoading(false)
         }
         loadData()
     }, [])

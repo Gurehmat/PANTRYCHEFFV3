@@ -27,7 +27,7 @@ export default function RecipesPage() {
             matchStatus: getMatchStatus(recipe.ingredients, pantryItems)
         }))
         .filter(item =>
-            item.title.toLowerCase().includes(searchTerm.toLowerCase())
+            (item.title || '').toLowerCase().includes(searchTerm.toLowerCase())
         )
         .sort((a, b) => b.matchStatus.score - a.matchStatus.score)
 

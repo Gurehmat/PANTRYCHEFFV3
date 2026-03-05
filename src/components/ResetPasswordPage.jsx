@@ -29,6 +29,12 @@ export default function ResetPasswordPage({ recoveryFlagKey }) {
         }
 
         try {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) {
+                setError('Your reset link may have expired or was already used. Please request a new password reset link.')
+                setLoading(false)
+                return
+            }
             const { error: err } = await supabase.auth.updateUser({ password: newPassword })
             if (err) throw err
             setMessage('Password updated. You can now sign in with your new password.')
@@ -91,7 +97,16 @@ export default function ResetPasswordPage({ recoveryFlagKey }) {
                     </div>
 
                     {error && (
-                        <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>
+                        <div className="space-y-2">
+                            <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">{error}</div>
+                            {error.includes('expired') && (
+                                <p className="text-center text-sm">
+                                    <Link to="/auth/forgot-password" className="text-orange-600 font-medium hover:underline">
+                                        Request a new reset link →
+                                    </Link>
+                                </p>
+                            )}
+                        </div>
                     )}
                     {message && (
                         <div className="p-3 bg-green-50 text-green-700 rounded-lg text-sm">{message}</div>

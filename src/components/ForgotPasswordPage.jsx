@@ -21,8 +21,11 @@ export default function ForgotPasswordPage({ recoveryFlagKey }) {
             if (recoveryFlagKey && typeof window !== 'undefined') {
                 sessionStorage.setItem(recoveryFlagKey, '1')
             }
+            // Use current origin + pathname so it works on localhost and GitHub Pages (/PANTRYCHEFFV3/)
+            const base = `${window.location.origin}${window.location.pathname}`.replace(/\/?$/, '')
+            const redirectTo = `${base}#/auth/reset-password`
             const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-                redirectTo: `${window.location.origin}${window.location.pathname}#/auth/reset-password`,
+                redirectTo,
             })
             if (err) throw err
             setMessage('Check your email for a link to reset your password. The link will expire in an hour.')

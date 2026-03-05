@@ -15,15 +15,16 @@ export const getMatchStatus = (recipeIngredients, pantryItems) => {
             .trim()
     }
 
-    // Create a Set of normalized pantry item names for fast lookup
-    // Also keep original names if needed, but normalization is key for matching
-    const pantryNames = new Set(pantryItems.map(item => normalize(item.name)))
+    const safeIngredients = Array.isArray(recipeIngredients) ? recipeIngredients : []
+    const safePantry = Array.isArray(pantryItems) ? pantryItems : []
+
+    const pantryNames = new Set(safePantry.map(item => normalize(item?.name)))
     const pantryList = Array.from(pantryNames)
 
     const matches = []
     const missing = []
 
-    recipeIngredients.forEach(ingredient => {
+    safeIngredients.forEach(ingredient => {
         const normalizedIngredient = normalize(ingredient)
 
         // precise matching: check if any pantry item is found as a whole word in the ingredient string
@@ -50,7 +51,7 @@ export const getMatchStatus = (recipeIngredients, pantryItems) => {
         }
     })
 
-    const score = Math.round((matches.length / recipeIngredients.length) * 100) || 0
+    const score = safeIngredients.length > 0 ? Math.round((matches.length / safeIngredients.length) * 100) || 0 : 0
 
     return { matches, missing, score }
 }

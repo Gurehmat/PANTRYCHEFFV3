@@ -103,7 +103,13 @@ Deploy/redeploy the Edge Functions after setting the secret.
 ### 3. Supabase setup
 
 - Run the SQL in `supabase/migrations/` in the Supabase SQL editor, or use the Supabase CLI to apply migrations.  
-- Make sure RLS policies on `recipes`, `favorites`, `shopping_list`, etc. match the policies in the migration files.
+- Make sure RLS policies on `recipes`, `favorites`, `shopping_list`, etc. match the policies in the migration files.  
+- **Password reset (important)**: In Supabase Dashboard go to **Authentication → URL Configuration** and set:
+  - **Site URL** to your app’s base URL, e.g. `https://gurehmat.github.io/PANTRYCHEFFV3/` (must match where the app actually lives; if this is wrong, the email link goes to the wrong place).
+  - **Redirect URLs** add both:
+    - `https://gurehmat.github.io/PANTRYCHEFFV3/#/auth/reset-password`
+    - `https://gurehmat.github.io/PANTRYCHEFFV3/`  
+    (and for local: `http://localhost:5173/#/auth/reset-password`, `http://localhost:5173/`).
 
 ### 4. Run the dev server
 

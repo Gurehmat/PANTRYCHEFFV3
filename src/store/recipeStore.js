@@ -17,17 +17,19 @@ export const useRecipeStore = create((set, get) => ({
 
             if (error) throw error
 
-            // Parse instructions and deduplicate by title
+            // Parse instructions and deduplicate by title (skip recipes with invalid JSON)
             const uniqueRecipes = new Map();
             (data || []).forEach(recipe => {
-                if (!uniqueRecipes.has(recipe.title)) {
-                    uniqueRecipes.set(recipe.title, {
-                        ...recipe,
-                        instructions: typeof recipe.instructions === 'string'
-                            ? JSON.parse(recipe.instructions)
-                            : recipe.instructions
-                    });
+                if (!recipe?.title || uniqueRecipes.has(recipe.title)) return
+                let instructions = recipe.instructions
+                if (typeof recipe.instructions === 'string') {
+                    try {
+                        instructions = JSON.parse(recipe.instructions)
+                    } catch {
+                        instructions = []
+                    }
                 }
+                uniqueRecipes.set(recipe.title, { ...recipe, instructions })
             });
 
             set({ recipes: Array.from(uniqueRecipes.values()) })
