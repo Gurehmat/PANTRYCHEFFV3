@@ -15,7 +15,7 @@ Check out the live application here: [https://gurehmat.github.io/PANTRYCHEFFV3/#
 
 ## Features
 
-- **Email/password auth** with Supabase  
+- **Email/password auth** with Supabase (sign in, sign up, forgot password, reset password via email link)  
 - **Landing page** for guests and a **dashboard** for signed‑in users  
 - **Pantry management**  
   - Add/edit/delete pantry items  
@@ -42,7 +42,8 @@ Check out the live application here: [https://gurehmat.github.io/PANTRYCHEFFV3/#
   - `App.jsx`: routing and session handling (public landing vs. protected app)  
   - `components/`  
     - `LandingPage.jsx`: marketing / overview page  
-    - `Auth.jsx`: sign‑in/sign‑up UI, with show/hide password  
+    - `SignInPage.jsx`, `SignUpPage.jsx`: sign in and create account  
+    - `ForgotPasswordPage.jsx`, `ResetPasswordPage.jsx`: password reset flow  
     - `Navbar.jsx`, `Layout.jsx`: shared shell for authenticated pages  
     - `Dashboard.jsx`: high‑level overview  
     - `PantryPage.jsx`, `PantryList.jsx`, `AddItemForm.jsx`, `PantryScanner.jsx`  
@@ -56,12 +57,15 @@ Check out the live application here: [https://gurehmat.github.io/PANTRYCHEFFV3/#
     - `supabaseClient.js` (Supabase JS client)  
   - `data/`  
     - Recipe JSON files used to seed and match recipes  
+- `scripts/`  
+  - Developer utilities: `check-db.js`, `check-images.js`, `test-generate.js`, `test-urls.js`, `verify-deployment.js`, `deduplicate_recipes.js`, `fix_duplicates.sql`, `generate-curated-recipes.mjs`, `add-recipe-images.mjs`  
 - `supabase/`  
   - `migrations/`: SQL schema and policy changes for recipes, pantry, shopping list, favorites  
   - `functions/`:  
     - `scan-pantry/`: Gemini multimodal image → ingredient list  
     - `generate-recipe/`: pantry items → structured recipe JSON  
     - `generate-substitutions/`: missing ingredients → substitution suggestions  
+    - `delete-account/`: delete user account and data  
 
 ## Getting started
 
@@ -129,12 +133,16 @@ This builds the Vite app and publishes the `dist` folder to the `gh-pages` branc
 
 ## Scripts (developer utilities)
 
-These are not required for running the app, but were useful while building it:
+All in `scripts/`. Not required for running the app. Run from project root, e.g. `node scripts/check-db.js`.
 
-- `verify-deployment.js`: Calls the Edge Functions directly (via fetch) and writes `verification_result.json` with statuses/responses.  
-- `test-generate.js`: Tests `generate-recipe` via Supabase client.  
-- `test-urls.js`, `check-images.js`: Inspect recipe image URLs and missing images in the dataset.  
-- `scripts/generate-curated-recipes.mjs`, `scripts/add-recipe-images.mjs`: Helpers for preparing the curated recipe datasets.
+- `check-db.js`: Quick Supabase recipes table check.  
+- `check-images.js`: Count recipes missing images in `src/data/recipes_with_images.json`.  
+- `test-generate.js`: Test `generate-recipe` Edge Function via Supabase client.  
+- `test-urls.js`: Test sample recipe image URLs.  
+- `verify-deployment.js`: Call Edge Functions via fetch; writes `verification_result.json`.  
+- `deduplicate_recipes.js`: Remove duplicate recipe names from `src/data/recipes.json`.  
+- `fix_duplicates.sql`: RLS policies for recipes (run in Supabase SQL editor).  
+- `generate-curated-recipes.mjs`, `add-recipe-images.mjs`: Build curated recipe datasets.
 
 ## Possible future improvements
 

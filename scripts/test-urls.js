@@ -1,12 +1,16 @@
 import fs from 'fs'
 import https from 'https'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const data = fs.readFileSync('./src/data/recipes_with_images.json', 'utf8')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const dataPath = path.join(__dirname, '..', 'src', 'data', 'recipes_with_images.json')
+const data = fs.readFileSync(dataPath, 'utf8')
 const recipes = JSON.parse(data)
 
 const sampleUrls = recipes.slice(0, 10).map(r => r.Image)
 
-async function checkUrl(url) {https://supabase.com/dashboard/project/vobjkyrbwjuwgnmmziim/auth/templates/confirm-sign-up
+async function checkUrl(url) {
   return new Promise((resolve) => {
     https.get(url, (res) => {
       resolve({ url, status: res.statusCode })

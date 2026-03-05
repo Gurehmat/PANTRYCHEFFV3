@@ -1,6 +1,10 @@
 import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const data = fs.readFileSync('./src/data/recipes_with_images.json', 'utf8')
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const dataPath = path.join(__dirname, '..', 'src', 'data', 'recipes_with_images.json')
+const data = fs.readFileSync(dataPath, 'utf8')
 const recipes = JSON.parse(data)
 
 const missing = recipes.filter(r => !r.Image)
