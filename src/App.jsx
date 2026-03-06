@@ -57,9 +57,24 @@ function App() {
     }
   }, [])
 
-  // When stuck on "Confirming..." (recovery URL but no session), manually exchange the code for a session.
-  // Supabase may not auto-detect the code when it's in the hash (HashRouter).
   const [recoveryTimedOut, setRecoveryTimedOut] = useState(false)
+
+  // Define these before the recovery effect so the effect's dependency array can reference them (avoids TDZ error).
+  const hasRecoveryFlag =
+    typeof window !== 'undefined' && !!sessionStorage.getItem(RECOVERY_FLAG_KEY)
+  const hasRecoveryCodeInUrl =
+    typeof window !== 'undefined' &&
+    (window.location.search.includes('code=') ||
+      window.location.search.includes('type=recovery') ||
+      window.location.hash.includes('code=') ||
+      window.location.hash.includes('type=recovery'))
+  const isRecoverySession =
+    authEvent === 'PASSWORD_RECOVERY' ||
+    (!!session && hasRecoveryFlag) ||
+    hasRecoveryCodeInUrl
+  const recoveryReady = isRecoverySession && !!session
+
+  // When stuck on "Confirming..." (recovery URL but no session), manually exchange the code for a session.
   useEffect(() => {
     if (!(isRecoverySession && !session) || recoveryTimedOut) return
 
@@ -91,7 +106,6 @@ function App() {
       return
     }
 
-    // No code in URL: wait for session or timeout after 12s
     const t = setTimeout(() => {
       setRecoveryTimedOut(true)
       if (typeof window !== 'undefined') sessionStorage.removeItem(RECOVERY_FLAG_KEY)
@@ -102,26 +116,6 @@ function App() {
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading...</div>
   }
-
-  // When user lands from "reset password" email link: show only the set-new-password page.
-  // Detect: PASSWORD_RECOVERY event, or session + we set the flag before sending the email,
-  // or URL has ?code= (PKCE) so Supabase redirected here for recovery (hash may be missing).
-  const hasRecoveryFlag =
-    typeof window !== 'undefined' && !!sessionStorage.getItem(RECOVERY_FLAG_KEY)
-  const hasRecoveryCodeInUrl =
-    typeof window !== 'undefined' &&
-    (window.location.search.includes('code=') ||
-      window.location.search.includes('type=recovery') ||
-      window.location.hash.includes('code=') ||
-      window.location.hash.includes('type=recovery'))
-  const isRecoverySession =
-    authEvent === 'PASSWORD_RECOVERY' ||
-    (!!session && hasRecoveryFlag) ||
-    hasRecoveryCodeInUrl
-
-  // Only show reset-password form when we have a session (recovery link has been exchanged).
-  // Otherwise show "Confirming link..." so we don't call updateUser without a session.
-  const recoveryReady = isRecoverySession && !!session
 
   return (
     <Router>
