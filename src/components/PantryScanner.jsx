@@ -7,9 +7,11 @@ export default function PantryScanner() {
     const [isOpen, setIsOpen] = useState(false)
     const [image, setImage] = useState(null)
     const [analyzing, setAnalyzing] = useState(false)
-    const [scannedItems, setScannedItems] = useState([]) // [{name, quantity, unit}]
-    const [step, setStep] = useState('upload') // 'upload' | 'review'
+    const [scannedItems, setScannedItems] = useState([])
+    const [step, setStep] = useState('upload')
+    const [isDragging, setIsDragging] = useState(false)
     const fileInputRef = useRef(null)
+    const cameraInputRef = useRef(null)
     const { addItems } = usePantryStore()
 
     const resizeImage = (file) => {
@@ -47,17 +49,41 @@ export default function PantryScanner() {
         })
     }
 
+    const processFile = async (file) => {
+        if (!file?.type?.startsWith('image/')) return
+        try {
+            const resizedImage = await resizeImage(file)
+            setImage(resizedImage)
+        } catch (error) {
+            console.error("Error resizing image:", error)
+            alert("Failed to process image. Please try again.")
+        }
+    }
+
     const handleFileSelect = async (e) => {
         const file = e.target.files?.[0]
-        if (file) {
-            try {
-                const resizedImage = await resizeImage(file)
-                setImage(resizedImage)
-            } catch (error) {
-                console.error("Error resizing image:", error)
-                alert("Failed to process image. Please try again.")
-            }
-        }
+        if (file) await processFile(file)
+        e.target.value = ''
+    }
+
+    const handleDragOver = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setIsDragging(true)
+    }
+
+    const handleDragLeave = (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setIsDragging(false)
+    }
+
+    const handleDrop = async (e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        setIsDragging(false)
+        const file = e.dataTransfer?.files?.[0]
+        if (file) await processFile(file)
     }
 
     const analyzeImage = async () => {
@@ -147,26 +173,62 @@ export default function PantryScanner() {
                                     </button>
                                 </div>
                             ) : (
-                                <div
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="border-2 border-dashed border-gray-300 rounded-2xl p-8 flex flex-col items-center justify-center text-gray-500 cursor-pointer hover:border-orange-400 hover:bg-orange-50 transition-all flex-1 min-h-[250px]"
-                                >
-                                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-500">
-                                        <Camera className="w-8 h-8" />
+                                <>
+                                    <div
+                                        onClick={() => fileInputRef.current?.click()}
+                                        onDragOver={handleDragOver}
+                                        onDragLeave={handleDragLeave}
+                                        onDrop={handleDrop}
+                                        className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center text-gray-500 cursor-pointer transition-all flex-1 min-h-[250px] ${
+                                            isDragging
+                                                ? 'border-orange-500 bg-orange-50 ring-2 ring-orange-200'
+                                                : 'border-gray-300 hover:border-orange-400 hover:bg-orange-50'
+                                        }`}
+                                    >
+                                        <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mb-4 text-orange-500">
+                                            <Camera className="w-8 h-8" />
+                                        </div>
+                                        <p className="font-semibold text-gray-900 text-lg">
+                                            {isDragging ? 'Drop photo here' : 'Drop a photo or tap to choose'}
+                                        </p>
+                                        <p className="text-sm text-gray-500 mt-1">
+                                            Drag & drop on desktop • Tap to take photo or pick from gallery on mobile
+                                        </p>
+                                        <div className="flex gap-3 mt-4">
+                                            <button
+                                                type="button"
+                                                onClick={(e) => { e.stopPropagation(); cameraInputRef.current?.click() }}
+                                                className="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 active:scale-95"
+                                            >
+                                                Take Photo
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click() }}
+                                                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 active:scale-95"
+                                            >
+                                                From Gallery
+                                            </button>
+                                        </div>
                                     </div>
-                                    <p className="font-semibold text-gray-900 text-lg">Take a photo</p>
-                                    <p className="text-sm text-gray-500 mt-1">or upload from gallery</p>
-                                </div>
-                            )}
 
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                className="hidden"
-                                accept="image/*"
-                                capture="environment"
-                                onChange={handleFileSelect}
-                            />
+                                    <input
+                                        type="file"
+                                        ref={fileInputRef}
+                                        className="hidden"
+                                        accept="image/*"
+                                        onChange={handleFileSelect}
+                                    />
+                                    <input
+                                        type="file"
+                                        ref={cameraInputRef}
+                                        className="hidden"
+                                        accept="image/*"
+                                        capture="environment"
+                                        onChange={handleFileSelect}
+                                    />
+                                </>
+                            )}
 
                             <button
                                 disabled={!image || analyzing}
