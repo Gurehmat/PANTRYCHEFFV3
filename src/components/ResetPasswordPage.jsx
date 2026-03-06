@@ -4,6 +4,14 @@ import { Loader2, ArrowLeft, KeyRound } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function ResetPasswordPage({ recoveryFlagKey }) {
+    const handleBackToSignIn = async (e) => {
+        e.preventDefault()
+        if (recoveryFlagKey && typeof window !== 'undefined') {
+            sessionStorage.removeItem(recoveryFlagKey)
+        }
+        await supabase.auth.signOut()
+        window.location.hash = '#/auth/signin'
+    }
     const [loading, setLoading] = useState(false)
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState(null)
@@ -51,12 +59,13 @@ export default function ResetPasswordPage({ recoveryFlagKey }) {
 
     return (
         <div className="relative min-h-screen bg-gradient-to-b from-amber-50 to-orange-50 flex items-center justify-center p-4">
-            <Link
-                to="/auth/signin"
+            <button
+                type="button"
+                onClick={handleBackToSignIn}
                 className="absolute top-8 left-8 flex items-center gap-2 text-gray-600 hover:text-orange-600 transition-colors"
             >
                 <ArrowLeft className="w-5 h-5" /> Back to sign in
-            </Link>
+            </button>
             <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full border border-orange-100">
                 <div className="flex flex-col items-center mb-8">
                     <div className="bg-amber-500 p-3 rounded-xl mb-4">

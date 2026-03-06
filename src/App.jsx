@@ -23,11 +23,11 @@ function App() {
   const [authEvent, setAuthEvent] = useState(null)
 
   useEffect(() => {
-    // If URL has code= or type=recovery (in query or hash), set flag so we keep showing reset-password after exchange
+    // Only set recovery flag when URL has type=recovery (password reset), NOT for signup confirmation (which uses code= only)
     if (typeof window !== 'undefined') {
       const q = window.location.search
       const h = window.location.hash
-      if (q.includes('code=') || q.includes('type=recovery') || h.includes('code=') || h.includes('type=recovery')) {
+      if (q.includes('type=recovery') || h.includes('type=recovery')) {
         sessionStorage.setItem(RECOVERY_FLAG_KEY, '1')
       }
     }
@@ -62,16 +62,17 @@ function App() {
   // Define these before the recovery effect so the effect's dependency array can reference them (avoids TDZ error).
   const hasRecoveryFlag =
     typeof window !== 'undefined' && !!sessionStorage.getItem(RECOVERY_FLAG_KEY)
-  const hasRecoveryCodeInUrl =
+  const hasRecoveryTypeInUrl =
     typeof window !== 'undefined' &&
-    (window.location.search.includes('code=') ||
-      window.location.search.includes('type=recovery') ||
-      window.location.hash.includes('code=') ||
-      window.location.hash.includes('type=recovery'))
+    (window.location.search.includes('type=recovery') || window.location.hash.includes('type=recovery'))
+  const hasCodeInUrl =
+    typeof window !== 'undefined' &&
+    (window.location.search.includes('code=') || window.location.hash.includes('code='))
   const isRecoverySession =
     authEvent === 'PASSWORD_RECOVERY' ||
     (!!session && hasRecoveryFlag) ||
-    hasRecoveryCodeInUrl
+    hasRecoveryTypeInUrl ||
+    (hasRecoveryFlag && hasCodeInUrl)
   const recoveryReady = isRecoverySession && !!session
 
   // When stuck on "Confirming..." (recovery URL but no session), manually exchange the code for a session.
@@ -125,12 +126,18 @@ function App() {
             <>
               <p className="text-gray-700 font-medium">Reset link expired or invalid</p>
               <p className="text-sm text-gray-500 text-center">Please request a new password reset link.</p>
-              <a
-                href="#/auth/forgot-password"
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== 'undefined') {
+                    sessionStorage.removeItem(RECOVERY_FLAG_KEY)
+                    window.location.hash = '#/auth/forgot-password'
+                  }
+                }}
                 className="mt-2 text-orange-600 font-medium hover:underline"
               >
                 Request new link →
-              </a>
+              </button>
             </>
           ) : (
             <>

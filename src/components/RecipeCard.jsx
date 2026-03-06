@@ -15,7 +15,10 @@ export default function RecipeCard({ recipe, matchStatus }) {
     }
 
     return (
-        <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col h-full group overflow-hidden relative">
+        <Link
+            to={`/recipes/${recipe.id}`}
+            className="block h-full bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all flex flex-col group overflow-hidden relative no-underline text-inherit"
+        >
             {/* Recipe Image */}
             <div className="h-44 overflow-hidden bg-gradient-to-br from-orange-100 to-amber-50 flex-shrink-0 relative">
                 {recipe.image_url ? (
@@ -80,15 +83,12 @@ export default function RecipeCard({ recipe, matchStatus }) {
                 )}
             </div>
 
-            <div className="p-4 border-t border-gray-50 bg-gray-50/50 rounded-b-xl">
-                <Link
-                    to={`/recipes/${recipe.id}`}
-                    className="w-full flex items-center justify-between text-sm font-semibold text-gray-600 hover:text-orange-600 transition-colors"
-                >
+            <div className="p-4 border-t border-gray-50 bg-gray-50/50 rounded-b-xl mt-auto">
+                <span className="w-full flex items-center justify-between text-sm font-semibold text-gray-600 group-hover:text-orange-600 transition-colors">
                     View Recipe
                     <ArrowRight className="w-4 h-4" />
-                </Link>
+                </span>
             </div>
-        </div>
+        </Link>
     )
 }
