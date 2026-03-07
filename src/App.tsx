@@ -25,33 +25,23 @@ function App() {
   const [isRecoveryMode, setIsRecoveryMode] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
 
-    // Check if we're returning from a password reset email click
-    const hasRecoveryFlag = localStorage.getItem('password_recovery_pending') === '1';
-    const urlHasCode =
-      window.location.search.includes('code=') || window.location.hash.includes('code=');
+    // Check URL for recovery marker
+    const searchParams = new URLSearchParams(window.location.search);
+    const isRecovery = searchParams.get('type') === 'recovery';
 
-    // Also check if we're already in active recovery mode (page was refreshed during recovery)
-    const activeRecovery = localStorage.getItem('recovery_mode_active') === '1';
-
-    if (hasRecoveryFlag && urlHasCode) {
-      // This is a recovery redirect — activate recovery mode
-      localStorage.removeItem('password_recovery_pending');
-      localStorage.setItem('recovery_mode_active', '1');
-
-      // Clean the URL after a short delay to let Supabase auto-exchange the code first
+    if (isRecovery) {
+      // Clean the URL after reading — replace with reset password route
+      // Use setTimeout to let Supabase auto-exchange the code first
       setTimeout(() => {
         window.history.replaceState(null, '', window.location.pathname + '#/auth/reset-password');
-      }, 500);
-
+      }, 1000);
       return true;
     }
 
-    return activeRecovery;
+    return false;
   });
 
   useEffect(() => {
-    const loadTimeout = window.setTimeout(() => setLoading(false), 6000);
-
     supabase.auth.getSession().then(({ data: { session: s } }) => {
       setSession(s);
       setLoading(false);
@@ -60,33 +50,20 @@ function App() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, s) => {
-      // If PASSWORD_RECOVERY fires (may or may not happen depending on timing), activate recovery mode
       if (event === 'PASSWORD_RECOVERY') {
         setIsRecoveryMode(true);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('recovery_mode_active', '1');
-          window.location.hash = '#/auth/reset-password';
-        }
         setSession(s);
         return;
       }
 
       if (event === 'SIGNED_OUT') {
         setIsRecoveryMode(false);
-        if (typeof window !== 'undefined') {
-          localStorage.removeItem('recovery_mode_active');
-          localStorage.removeItem('password_recovery_pending');
-        }
       }
 
-      // If in recovery mode, still update session but don't let the router send to dashboard
       setSession(s);
     });
 
-    return () => {
-      window.clearTimeout(loadTimeout);
-      subscription?.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   if (loading) {
@@ -103,15 +80,7 @@ function App() {
             path="/auth/reset-password"
             element={
               <Suspense fallback={<PageLoader />}>
-                <ResetPasswordPage
-                  onRecoveryComplete={() => {
-                    setIsRecoveryMode(false);
-                    if (typeof window !== 'undefined') {
-                      localStorage.removeItem('recovery_mode_active');
-                      localStorage.removeItem('password_recovery_pending');
-                    }
-                  }}
-                />
+                <ResetPasswordPage onRecoveryComplete={() => setIsRecoveryMode(false)} />
               </Suspense>
             }
           />

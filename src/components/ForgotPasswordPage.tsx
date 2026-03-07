@@ -19,10 +19,7 @@ export default function ForgotPasswordPage() {
     }
     try {
       setLoading(true);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('password_recovery_pending', '1');
-      }
-      const redirectTo = `${window.location.origin}/PANTRYCHEFFV3/`;
+      const redirectTo = `${window.location.origin}/PANTRYCHEFFV3/?type=recovery`;
       const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo,
       });
