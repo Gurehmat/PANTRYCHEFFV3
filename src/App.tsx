@@ -26,17 +26,17 @@ function App() {
     if (typeof window === 'undefined') return false;
 
     // Check if we're returning from a password reset email click
-    const hasRecoveryFlag = sessionStorage.getItem('password_recovery_pending') === '1';
+    const hasRecoveryFlag = localStorage.getItem('password_recovery_pending') === '1';
     const urlHasCode =
       window.location.search.includes('code=') || window.location.hash.includes('code=');
 
     // Also check if we're already in active recovery mode (page was refreshed during recovery)
-    const activeRecovery = sessionStorage.getItem('recovery_mode_active') === '1';
+    const activeRecovery = localStorage.getItem('recovery_mode_active') === '1';
 
     if (hasRecoveryFlag && urlHasCode) {
       // This is a recovery redirect — activate recovery mode
-      sessionStorage.removeItem('password_recovery_pending');
-      sessionStorage.setItem('recovery_mode_active', '1');
+      localStorage.removeItem('password_recovery_pending');
+      localStorage.setItem('recovery_mode_active', '1');
 
       // Clean the URL after a short delay to let Supabase auto-exchange the code first
       setTimeout(() => {
@@ -64,7 +64,7 @@ function App() {
       if (event === 'PASSWORD_RECOVERY') {
         setIsRecoveryMode(true);
         if (typeof window !== 'undefined') {
-          sessionStorage.setItem('recovery_mode_active', '1');
+          localStorage.setItem('recovery_mode_active', '1');
           window.location.hash = '#/auth/reset-password';
         }
         setSession(s);
@@ -74,8 +74,8 @@ function App() {
       if (event === 'SIGNED_OUT') {
         setIsRecoveryMode(false);
         if (typeof window !== 'undefined') {
-          sessionStorage.removeItem('recovery_mode_active');
-          sessionStorage.removeItem('password_recovery_pending');
+          localStorage.removeItem('recovery_mode_active');
+          localStorage.removeItem('password_recovery_pending');
         }
       }
 
@@ -107,8 +107,8 @@ function App() {
                   onRecoveryComplete={() => {
                     setIsRecoveryMode(false);
                     if (typeof window !== 'undefined') {
-                      sessionStorage.removeItem('recovery_mode_active');
-                      sessionStorage.removeItem('password_recovery_pending');
+                      localStorage.removeItem('recovery_mode_active');
+                      localStorage.removeItem('password_recovery_pending');
                     }
                   }}
                 />
