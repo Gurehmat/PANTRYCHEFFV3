@@ -339,16 +339,18 @@ export default function RecipeDetailPage() {
           <div className="p-5 md:p-8">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Instructions</h2>
             <ol className="space-y-6">
-              {steps.map((step, i) => (
-                <li key={i} className="flex gap-4">
-                  <span className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm">
-                    {i + 1}
-                  </span>
-                  <p className="text-gray-700 leading-relaxed mt-1">
-                    {step.replace(/<[^>]*>?/gm, '').trim()}
-                  </p>
-                </li>
-              ))}
+              {steps.map((step, i) => {
+                const cleaned = step.replace(/<[^>]*>?/gm, '').trim();
+                const formatted = cleaned.replace(/([.!?])(?=[A-Z])/g, '$1 ');
+                return (
+                  <li key={i} className="flex gap-4">
+                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-sm">
+                      {i + 1}
+                    </span>
+                    <p className="text-gray-700 leading-relaxed mt-1">{formatted}</p>
+                  </li>
+                );
+              })}
             </ol>
           </div>
         </div>
