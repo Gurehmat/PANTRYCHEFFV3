@@ -19,104 +19,101 @@ const SignUpPage = lazy(() => import('./components/SignUpPage'));
 const ForgotPasswordPage = lazy(() => import('./components/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./components/ResetPasswordPage'));
 
-const RECOVERY_FLAG_KEY = 'pantrychef_expecting_recovery';
+const RECOVERY_MODE_KEY = 'recovery_mode';
+
+async function handleAuthRedirect(): Promise<void> {
+  if (typeof window === 'undefined') return;
+
+  // Check for code in query params
+  const urlParams = new URLSearchParams(window.location.search);
+  let code = urlParams.get('code');
+
+  // Also check if code is embedded in the hash (e.g., #/auth/reset-password?code=XXX)
+  if (!code && window.location.hash.includes('code=')) {
+    const hashContent = window.location.hash.substring(1);
+    const queryStart = hashContent.indexOf('?');
+    const paramStr = queryStart >= 0 ? hashContent.substring(queryStart + 1) : hashContent;
+    const hashParams = new URLSearchParams(paramStr);
+    code = hashParams.get('code');
+  }
+
+  if (code) {
+    try {
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (error) {
+        console.error('Code exchange failed:', error);
+      }
+      // Clean the URL — remove the code parameter, set the hash to the reset password page
+      window.history.replaceState(null, '', window.location.pathname + '#/auth/reset-password');
+      // The onAuthStateChange listener will handle the PASSWORD_RECOVERY event after code exchange
+    } catch (err) {
+      console.error('Auth redirect handling failed:', err);
+    }
+  }
+}
 
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [authEvent, setAuthEvent] = useState<AuthChangeEvent | null>(null);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(
+    () => typeof window !== 'undefined' && sessionStorage.getItem(RECOVERY_MODE_KEY) === '1'
+  );
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const q = window.location.search;
-      const h = window.location.hash;
-      if (q.includes('type=recovery') || h.includes('type=recovery')) {
-        sessionStorage.setItem(RECOVERY_FLAG_KEY, '1');
-      }
-    }
+    const loadTimeout = window.setTimeout(() => setLoading(false), 6000);
 
-    const loadTimeout = setTimeout(() => setLoading(false), 6000);
-
-    supabase.auth
-      .getSession()
-      .then(({ data: { session: s } }) => {
-        setSession(s);
-        setLoading(false);
-      })
-      .catch(() => {
-        setSession(null);
-        setLoading(false);
-      })
-      .finally(() => clearTimeout(loadTimeout));
-
+    // Set up listener FIRST so we catch PASSWORD_RECOVERY when exchangeCodeForSession runs
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((event, s) => {
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, s) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecoveryMode(true);
+        setSession(s);
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(RECOVERY_MODE_KEY, '1');
+          window.location.hash = '#/auth/reset-password';
+        }
+        return;
+      }
+
+      // For other events, update session as normal but check recovery flag first
+      if (typeof window !== 'undefined' && sessionStorage.getItem(RECOVERY_MODE_KEY) === '1') {
+        // Still in recovery — don't redirect to dashboard
+        return;
+      }
+
       setSession(s);
-      setAuthEvent(event);
     });
 
+    async function init() {
+      await handleAuthRedirect();
+
+      supabase.auth
+        .getSession()
+        .then(({ data: { session: s } }) => {
+          setSession(s);
+          setLoading(false);
+        })
+        .catch(() => {
+          setSession(null);
+          setLoading(false);
+        })
+        .finally(() => {
+          if (typeof window !== 'undefined') {
+            window.clearTimeout(loadTimeout);
+          }
+        });
+    }
+
+    init();
+
     return () => {
-      clearTimeout(loadTimeout);
+      if (typeof window !== 'undefined') {
+        window.clearTimeout(loadTimeout);
+      }
       subscription?.unsubscribe();
     };
   }, []);
-
-  const [recoveryTimedOut, setRecoveryTimedOut] = useState(false);
-
-  const hasRecoveryFlag =
-    typeof window !== 'undefined' && !!sessionStorage.getItem(RECOVERY_FLAG_KEY);
-  const hasRecoveryTypeInUrl =
-    typeof window !== 'undefined' &&
-    (window.location.search.includes('type=recovery') ||
-      window.location.hash.includes('type=recovery'));
-  const hasCodeInUrl =
-    typeof window !== 'undefined' &&
-    (window.location.search.includes('code=') || window.location.hash.includes('code='));
-  const isRecoverySession =
-    authEvent === 'PASSWORD_RECOVERY' ||
-    (!!session && hasRecoveryFlag) ||
-    hasRecoveryTypeInUrl ||
-    (hasRecoveryFlag && hasCodeInUrl);
-  const recoveryReady = isRecoverySession && !!session;
-
-  useEffect(() => {
-    if (!(isRecoverySession && !session) || recoveryTimedOut) return;
-
-    const getCodeFromUrl = (): string | null => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
-      if (code) return code;
-      const hash = window.location.hash;
-      const hashParams = new URLSearchParams(hash.split('?')[1] || '');
-      return hashParams.get('code');
-    };
-
-    const code = getCodeFromUrl();
-    if (code) {
-      supabase.auth
-        .exchangeCodeForSession(code)
-        .then(({ data }) => {
-          const s = data?.session;
-          if (s) {
-            setSession(s);
-            setAuthEvent('PASSWORD_RECOVERY');
-            const base = window.location.origin + window.location.pathname;
-            window.history.replaceState(null, '', base + '#/auth/reset-password');
-          } else {
-            setRecoveryTimedOut(true);
-          }
-        })
-        .catch(() => setRecoveryTimedOut(true));
-      return;
-    }
-
-    const t = setTimeout(() => {
-      setRecoveryTimedOut(true);
-      if (typeof window !== 'undefined') sessionStorage.removeItem(RECOVERY_FLAG_KEY);
-    }, 12000);
-    return () => clearTimeout(t);
-  }, [isRecoverySession, session, recoveryTimedOut]);
 
   if (loading) {
     return (
@@ -126,44 +123,20 @@ function App() {
 
   return (
     <Router>
-      {isRecoverySession && !session ? (
-        <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gradient-to-b from-amber-50 to-orange-50 p-4">
-          {recoveryTimedOut ? (
-            <>
-              <p className="text-gray-700 font-medium">Reset link expired or invalid</p>
-              <p className="text-sm text-gray-500 text-center">
-                Please request a new password reset link.
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  if (typeof window !== 'undefined') {
-                    sessionStorage.removeItem(RECOVERY_FLAG_KEY);
-                    window.location.hash = '#/auth/forgot-password';
-                  }
-                }}
-                className="mt-2 text-orange-600 font-medium hover:underline"
-              >
-                Request new link →
-              </button>
-            </>
-          ) : (
-            <>
-              <div className="animate-spin w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full" />
-              <p className="text-gray-600">Confirming your reset link…</p>
-              <p className="text-sm text-gray-500">
-                If this takes more than a few seconds, your link may have expired.
-              </p>
-            </>
-          )}
-        </div>
-      ) : recoveryReady ? (
+      {isRecoveryMode ? (
         <Routes>
           <Route
             path="/auth/reset-password"
             element={
               <Suspense fallback={<PageLoader />}>
-                <ResetPasswordPage recoveryFlagKey={RECOVERY_FLAG_KEY} />
+                <ResetPasswordPage
+                  onRecoveryComplete={() => {
+                    setIsRecoveryMode(false);
+                    if (typeof window !== 'undefined') {
+                      sessionStorage.removeItem(RECOVERY_MODE_KEY);
+                    }
+                  }}
+                />
               </Suspense>
             }
           />
@@ -200,7 +173,7 @@ function App() {
             path="/auth/forgot-password"
             element={
               <Suspense fallback={<PageLoader />}>
-                <ForgotPasswordPage recoveryFlagKey={RECOVERY_FLAG_KEY} />
+                <ForgotPasswordPage />
               </Suspense>
             }
           />

@@ -1,26 +1,25 @@
 import { useState, type FormEvent } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { Loader2, ArrowLeft, KeyRound } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface ResetPasswordPageProps {
-  recoveryFlagKey?: string;
+  onRecoveryComplete?: () => void;
 }
 
-export default function ResetPasswordPage({ recoveryFlagKey }: ResetPasswordPageProps) {
+export default function ResetPasswordPage({ onRecoveryComplete }: ResetPasswordPageProps) {
   const [loading, setLoading] = useState(false);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const handleBackToSignIn = async (e: React.MouseEvent) => {
     e.preventDefault();
-    if (recoveryFlagKey && typeof window !== 'undefined') {
-      sessionStorage.removeItem(recoveryFlagKey);
-    }
+    onRecoveryComplete?.();
     await supabase.auth.signOut();
-    window.location.hash = '#/auth/signin';
+    navigate('/auth/signin', { replace: true });
   };
 
   const handleUpdatePassword = async (e: FormEvent<HTMLFormElement>) => {
@@ -51,11 +50,8 @@ export default function ResetPasswordPage({ recoveryFlagKey }: ResetPasswordPage
       }
       const { error: err } = await supabase.auth.updateUser({ password: newPassword });
       if (err) throw err;
-      setMessage('Password updated. You can now sign in with your new password.');
-      if (recoveryFlagKey && typeof window !== 'undefined') {
-        sessionStorage.removeItem(recoveryFlagKey);
-      }
-      await supabase.auth.signOut();
+      onRecoveryComplete?.();
+      navigate('/', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to update password.');
     } finally {

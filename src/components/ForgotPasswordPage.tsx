@@ -3,11 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import { Loader2, Mail, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-interface ForgotPasswordPageProps {
-  recoveryFlagKey?: string;
-}
-
-export default function ForgotPasswordPage({ recoveryFlagKey }: ForgotPasswordPageProps) {
+export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -23,11 +19,7 @@ export default function ForgotPasswordPage({ recoveryFlagKey }: ForgotPasswordPa
     }
     try {
       setLoading(true);
-      if (recoveryFlagKey && typeof window !== 'undefined') {
-        sessionStorage.setItem(recoveryFlagKey, '1');
-      }
-      const base = `${window.location.origin}${window.location.pathname}`.replace(/\/?$/, '');
-      const redirectTo = `${base}#/auth/reset-password`;
+      const redirectTo = `${window.location.origin}/PANTRYCHEFFV3/`;
       const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo,
       });
