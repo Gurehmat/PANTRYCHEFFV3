@@ -104,7 +104,9 @@ export default function RecipesPage() {
           <p className="text-gray-500 mb-6 text-sm">
             Seed the database or add recipes to get started.
           </p>
-          <SeedButton />
+          <div className="mt-4 flex justify-center">
+            <SeedButton />
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

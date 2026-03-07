@@ -61,7 +61,7 @@ export default function Navbar() {
                 <ChefHat className="w-6 h-6 text-white" />
               </div>
               <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                PantryCheff
+                pantrycheff
               </span>
             </Link>
           </div>
