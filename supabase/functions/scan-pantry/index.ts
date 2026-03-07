@@ -1,64 +1,69 @@
-declare const Deno: any;
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+declare const Deno: {
+  env: { get: (k: string) => string | undefined };
+  serve: (h: (req: Request) => Promise<Response>) => void;
 };
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+function jsonError(error: string, code: string, details?: unknown) {
+  return new Response(JSON.stringify({ error, code, ...(details != null && { details }) }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    status: 400,
+  });
+}
+
 Deno.serve(async (req: Request) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    console.log("Step 1: Parsing request body...");
     let body: { image?: string };
     try {
-      body = await req.json() as { image?: string };
-    } catch (parseErr: any) {
-      throw new Error(`Failed to parse request body as JSON: ${parseErr.message}`);
-    }
-    const image = body.image;
-
-    if (!image) {
-      throw new Error("No image provided in body. Keys received: " + Object.keys(body).join(", "));
+      body = (await req.json()) as { image?: string };
+    } catch (parseErr: unknown) {
+      const msg = parseErr instanceof Error ? parseErr.message : String(parseErr);
+      console.error('[scan-pantry] Parse error', msg);
+      return jsonError('Invalid JSON body', 'VALIDATION', { message: msg });
     }
 
-    console.log(`Step 2: Received image size: ${Math.round(image.length / 1024)} KB`);
+    const image = body?.image;
+    if (!image || typeof image !== 'string') {
+      return jsonError('Missing or invalid "image" (base64 string required)', 'VALIDATION', {
+        receivedKeys: Object.keys(body || {}),
+      });
+    }
 
-    // @ts-ignore: Deno global is available in Edge Functions
-    const apiKey = Deno.env.get("GEMINI_API_KEY");
+    const apiKey = Deno.env.get('GEMINI_API_KEY');
     if (!apiKey) {
-      throw new Error("GEMINI_API_KEY is not set. Please run: supabase secrets set GEMINI_API_KEY=your_key --project-ref vobjkyrbwjuwgnmmziim");
+      console.error('[scan-pantry] GEMINI_API_KEY is not set');
+      return jsonError('Server configuration error', 'CONFIG');
     }
-    console.log("Step 3: GEMINI_API_KEY found, calling Gemini API...");
 
-    // Prepare the request to Gemini
-    // Using gemini-2.0-flash-lite for speed and multimodal capabilities
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${apiKey}`,
       {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contents: [{
-            parts: [
-              {
-                text:
-                  "Analyze this image of a fridge or pantry. List every food ingredient you can clearly identify. Return purely a JSON array of objects with 'name', 'quantity' (number, estimate if needed, default 1), and 'unit' (default 'pc' or 'pack' etc). Example: [{\"name\": \"Milk\", \"quantity\": 1, \"unit\": \"bottle\"}]. Do not include markdown formatting like ```json.",
-              },
-              {
-                inline_data: {
-                  mime_type: "image/jpeg",
-                  data: image, // Expecting base64 string without data:image/jpeg;base64, prefix if possible, or we strip it
+          contents: [
+            {
+              parts: [
+                {
+                  text: 'Analyze this image of a fridge or pantry. List every food ingredient you can clearly identify. Return purely a JSON array of objects with \'name\', \'quantity\' (number, estimate if needed, default 1), and \'unit\' (default \'pc\' or \'pack\' etc). Example: [{"name": "Milk", "quantity": 1, "unit": "bottle"}]. Do not include markdown formatting like ```json.',
                 },
-              },
-            ],
-          }],
+                {
+                  inline_data: {
+                    mime_type: 'image/jpeg',
+                    data: image,
+                  },
+                },
+              ],
+            },
+          ],
           generationConfig: {
             temperature: 0.4,
             topK: 32,
@@ -66,53 +71,64 @@ Deno.serve(async (req: Request) => {
             maxOutputTokens: 1024,
           },
         }),
-      },
+      }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("Gemini API Error:", errorText);
-      throw new Error(`Gemini API returned ${response.status}: ${errorText}`);
+      console.error('[scan-pantry] Gemini API error', response.status, errorText);
+      const isRateLimit = response.status === 429;
+      const is5xx = response.status >= 500 && response.status < 600;
+      const code = isRateLimit ? 'AI_RATE_LIMIT' : is5xx ? 'AI_SERVER_ERROR' : 'AI_ERROR';
+      return new Response(
+        JSON.stringify({
+          error: isRateLimit
+            ? 'Too many requests. Please try again in a moment.'
+            : `AI service error (${response.status})`,
+          code,
+          details: errorText.slice(0, 200),
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      );
     }
 
-    interface GeminiResponse {
-      candidates?: {
-        content?: {
-          parts?: {
-            text?: string;
-          }[];
-        };
-      }[];
-    }
+    const data = (await response.json()) as {
+      candidates?: { content?: { parts?: { text?: string }[] }[] }[];
+    };
+    let text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '[]';
+    text = text
+      .replace(/```json/g, '')
+      .replace(/```/g, '')
+      .trim();
 
-    const data = await response.json() as GeminiResponse;
-    console.log("Gemini Response:", JSON.stringify(data));
-
-    let text = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
-
-    // Clean up markdown if present
-    text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-
-    let ingredients = [];
+    let ingredients: unknown[];
     try {
-      ingredients = JSON.parse(text);
+      ingredients = JSON.parse(text) as unknown[];
     } catch (e) {
-      console.error("Failed to parse JSON:", text);
-      throw new Error("Failed to parse AI response as JSON");
+      console.error('[scan-pantry] Invalid JSON from Gemini', text.slice(0, 200), e);
+      return jsonError('AI returned invalid response', 'AI_INVALID_RESPONSE', {
+        raw: text.slice(0, 200),
+      });
     }
 
+    if (!Array.isArray(ingredients)) {
+      return jsonError('AI response must be a JSON array', 'AI_INVALID_STRUCTURE');
+    }
+
+    return new Response(JSON.stringify(ingredients), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    const isTimeout = /timeout|deadline|timed out/i.test(message);
+    const code = isTimeout ? 'AI_TIMEOUT' : 'NETWORK_ERROR';
+    console.error('[scan-pantry]', code, message, err);
     return new Response(
-      JSON.stringify(ingredients),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
-  } catch (error: any) {
-    console.error("Error processing request:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-      },
+      JSON.stringify({
+        error: isTimeout ? 'Request timed out. Please try again.' : message,
+        code,
+      }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
     );
   }
 });

@@ -77,12 +77,7 @@
     "Description": "A delicious Beef dish from Argentinian cuisine.",
     "ImageUrl": "https://www.themealdb.com/images/media/meals/kgfh3q1763075438.jpg",
     "CookingTime": "30 mins",
-    "Ingredients": [
-      "2kg Mixed Beef Cuts",
-      "4 Chorizo",
-      "2 Morcilla",
-      "To taste Salt"
-    ],
+    "Ingredients": ["2kg Mixed Beef Cuts", "4 Chorizo", "2 Morcilla", "To taste Salt"],
     "Method": [
       "Prepare the Fire: Start a wood fire in your grill and let it burn down to coals.",
       "Season the Meat: Generously salt the beef cuts.",
@@ -858,14 +853,8 @@
     "Description": "A delicious Breakfast dish from Indian cuisine.",
     "ImageUrl": "https://www.themealdb.com/images/media/meals/hqaejl1695738653.jpg",
     "CookingTime": "30 mins",
-    "Ingredients": [
-      "2 Bread",
-      "2 Egg",
-      "0.5 Salt"
-    ],
-    "Method": [
-      "Make and enjoy"
-    ]
+    "Ingredients": ["2 Bread", "2 Egg", "0.5 Salt"],
+    "Method": ["Make and enjoy"]
   },
   {
     "Name": "Breakfast Potatoes",

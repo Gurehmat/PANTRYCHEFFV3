@@ -1,84 +1,115 @@
-# PantryCheff
+# 🍳 PantryCheff
 
-PantryCheff is a full‑stack app that helps you cook from what you already have. It tracks pantry items, suggests recipes you can make, and uses AI to scan your fridge and generate “magic” recipes plus ingredient substitutions.
+> Cook from what you already have — AI-powered pantry tracking,
+> recipe matching, and personalized recipe generation.
 
-## Live Demo
+[![CI](https://github.com/YOUR_GITHUB_USERNAME/PANTRYCHEFFV3/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_GITHUB_USERNAME/PANTRYCHEFFV3/actions/workflows/ci.yml)
 
-Check out the live application here: [https://gurehmat.github.io/PANTRYCHEFFV3/#/](https://gurehmat.github.io/PANTRYCHEFFV3/#/)
+[Live Demo](https://YOUR_GITHUB_USERNAME.github.io/PANTRYCHEFFV3/) |
+[Architecture](#architecture) | [Getting Started](#getting-started)
 
-## Tech stack
+## ✨ Features
 
-- **Frontend**: React (Vite), React Router, Zustand, Tailwind CSS  
-- **Backend**: Supabase (Postgres, Auth, Edge Functions)  
-- **AI**: Google Gemini via Supabase Edge Functions  
-- **Build/Deploy**: Vite, GitHub Pages
+List every feature with emoji icons, grouped logically:
 
-## Features
+**Core**
+- 🗄️ Pantry Management — add, edit, delete items with quantities,
+  units, and expiry dates
+- 📸 AI Fridge Scanner — photograph your fridge/pantry and let
+  Google Gemini identify ingredients automatically
+- 📖 Recipe Browser — browse curated recipes matched against your
+  pantry items
+- ❤️ Favorites — save recipes you love
+- 🛒 Shopping List — track missing ingredients you need to buy
 
-- **Email/password auth** with Supabase (sign in, sign up, forgot password, reset password via email link)  
-- **Landing page** for guests and a **dashboard** for signed‑in users  
-- **Pantry management**  
-  - Add/edit/delete pantry items  
-  - Bulk add from AI fridge scans  
-- **Recipe browser**  
-  - Curated recipes seeded from a dataset  
-  - Detail view with ingredients and instructions  
-  - Favorites list  
-- **Magic Recipe (AI)**  
-  - Send current pantry items to a Gemini‑backed Edge Function  
-  - Get back a structured recipe: title, description, ingredients, instructions, cooking time, missing ingredients  
-- **Ingredient substitutions (AI)**  
-  - For a given recipe + missing items, get Gemini‑generated substitution suggestions  
-- **Shopping list**  
-  - Add missing ingredients from recipes into a shopping list  
-- **Fridge / pantry scanner (AI)**  
-  - Upload or capture a photo  
-  - Supabase Edge Function calls Gemini’s multimodal API  
-  - Returns parsed ingredients (name, quantity, unit) ready to add into the pantry  
+**AI-Powered**
+- 🪄 Magic Recipe Generation — AI generates personalized recipes
+  from your current pantry items
+- 🔄 Smart Substitutions — AI suggests ingredient substitutions
+  for missing items
+- 📊 Confidence-Based Matching — algorithm scores recipe matches
+  with exact, partial, and fuzzy matching
 
-## Project structure
+**User Experience**
+- 👨‍🍳 Cook Mode — distraction-free step-by-step cooking interface
+  with ingredient checklist
+- ⚠️ Expiry Alerts — color-coded warnings for expired and
+  soon-to-expire pantry items
+- 📈 Dashboard Stats — at-a-glance view of pantry status and
+  makeable recipes
+- ⚡ Response Caching — AI responses cached to reduce API calls
+  and improve speed
+- 🛡️ Rate Limiting — client-side protection against API abuse
 
-- `src/`  
-  - `App.jsx`: routing and session handling (public landing vs. protected app)  
-  - `components/`  
-    - `LandingPage.jsx`: marketing / overview page  
-    - `SignInPage.jsx`, `SignUpPage.jsx`: sign in and create account  
-    - `ForgotPasswordPage.jsx`, `ResetPasswordPage.jsx`: password reset flow  
-    - `Navbar.jsx`, `Layout.jsx`: shared shell for authenticated pages  
-    - `Dashboard.jsx`: high‑level overview  
-    - `PantryPage.jsx`, `PantryList.jsx`, `AddItemForm.jsx`, `PantryScanner.jsx`  
-    - `RecipesPage.jsx`, `RecipeDetailPage.jsx`, `RecipeCard.jsx`, `RecipeGenerator.jsx`  
-    - `ShoppingListPage.jsx`, `FavoritesPage.jsx`  
-  - `store/`  
-    - `pantryStore.js`, `recipeStore.js`, `shoppingListStore.js` (Zustand state)  
-  - `services/`  
-    - `recipeService.js` (calls Supabase Edge Functions: `generate-recipe`, `generate-substitutions`)  
-  - `lib/`  
-    - `supabaseClient.js` (Supabase JS client)  
-  - `data/`  
-    - Recipe JSON files used to seed and match recipes  
-- `scripts/`  
-  - Developer utilities: `check-db.js`, `check-images.js`, `test-generate.js`, `test-urls.js`, `verify-deployment.js`, `deduplicate_recipes.js`, `fix_duplicates.sql`, `generate-curated-recipes.mjs`, `add-recipe-images.mjs`  
-- `supabase/`  
-  - `migrations/`: SQL schema and policy changes for recipes, pantry, shopping list, favorites  
-  - `functions/`:  
-    - `scan-pantry/`: Gemini multimodal image → ingredient list  
-    - `generate-recipe/`: pantry items → structured recipe JSON  
-    - `generate-substitutions/`: missing ingredients → substitution suggestions  
-    - `delete-account/`: delete user account and data  
+**Engineering**
+- 🔒 Row-Level Security — database-level data isolation per user
+- 🧪 154 automated tests with Vitest
+- 📝 Full TypeScript (strict mode)
+- 🔄 CI/CD pipeline with GitHub Actions
+- 🎨 Consistent code style via ESLint + Prettier + Husky
 
-## Getting started
+## 📸 Screenshots
+
+(Add HTML comment placeholders for where to insert screenshots later:)
+<!-- Screenshot: Landing Page -->
+<!-- Screenshot: Dashboard with Stats and Expiry Alerts -->
+<!-- Screenshot: Pantry with items -->
+<!-- Screenshot: AI Recipe Generation -->
+<!-- Screenshot: Cook Mode -->
+<!-- Screenshot: Fridge Scanner -->
+
+## 🏗️ Architecture
+
+Add a Mermaid diagram:
+
+```mermaid
+graph TB
+    subgraph "Frontend (React SPA)"
+        UI[React 19 + TypeScript]
+        State[Zustand Stores]
+        Cache[Response Cache]
+        RL[Rate Limiter]
+    end
+    
+    subgraph "Backend (Supabase)"
+        Auth[Supabase Auth]
+        DB[(Postgres + RLS)]
+        EF[Edge Functions]
+    end
+    
+    subgraph "AI (Google Gemini)"
+        Text[Text Generation]
+        Multi[Multimodal Vision]
+    end
+    
+    UI --> State
+    UI --> Cache
+    UI --> RL
+    State --> Auth
+    State --> DB
+    RL --> EF
+    EF --> Text
+    EF --> Multi
+    
+    style UI fill:#61dafb
+    style DB fill:#336791
+    style EF fill:#3ecf8e
+    style Text fill:#4285f4
+    style Multi fill:#4285f4
+```
+
+## Getting Started
 
 ### Prerequisites
 
-- Node.js (LTS)  
-- A Supabase project  
-- A Gemini API key (Google AI Studio / Vertex AI)
+- Node.js (LTS)
+- A [Supabase](https://supabase.com) project
+- A [Gemini API key](https://ai.google.dev/) (configured as a secret in Supabase Edge Functions)
 
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/<your-username>/PANTRYCHEFFV3.git
+git clone https://github.com/YOUR_GITHUB_USERNAME/PANTRYCHEFFV3.git
 cd PANTRYCHEFFV3
 npm install
 ```
@@ -88,74 +119,30 @@ npm install
 Create a `.env` file in the project root:
 
 ```env
-VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-# Optional: only if you call Gemini directly from frontend
-# VITE_GEMINI_API_KEY=your_gemini_key
 ```
 
-On Supabase, configure Edge Function secrets:
-
-- `GEMINI_API_KEY` = your Gemini API key
-
-Deploy/redeploy the Edge Functions after setting the secret.
+In the Supabase Dashboard, set the `GEMINI_API_KEY` secret for Edge Functions, then deploy the functions.
 
 ### 3. Supabase setup
 
-- Run the SQL in `supabase/migrations/` in the Supabase SQL editor, or use the Supabase CLI to apply migrations.  
-- Make sure RLS policies on `recipes`, `favorites`, `shopping_list`, etc. match the policies in the migration files.  
-- **Password reset (important)**: In Supabase Dashboard go to **Authentication → URL Configuration** and set:
-  - **Site URL** to your app’s base URL, e.g. `https://gurehmat.github.io/PANTRYCHEFFV3/` (must match where the app actually lives; if this is wrong, the email link goes to the wrong place).
-  - **Redirect URLs** add both:
-    - `https://gurehmat.github.io/PANTRYCHEFFV3/#/auth/reset-password`
-    - `https://gurehmat.github.io/PANTRYCHEFFV3/`  
-    (and for local: `http://localhost:5173/#/auth/reset-password`, `http://localhost:5173/`).
+- Apply the SQL in `supabase/migrations/` (e.g. via the Supabase SQL editor or CLI).
+- In **Authentication → URL Configuration**, set **Site URL** and **Redirect URLs** to match your app (e.g. GitHub Pages base URL and `http://localhost:5173` for local dev).
 
-### 4. Run the dev server
+### 4. Run locally
 
 ```bash
 npm run dev
 ```
 
-Open the URL printed in the terminal (typically `http://localhost:5173`).
+Open the URL shown in the terminal (typically `http://localhost:5173`).
 
-### 5. Deploy
-
-The project is configured for GitHub Pages:
+### 5. Build and deploy
 
 ```bash
 npm run build
 npm run deploy
 ```
 
-This builds the Vite app and publishes the `dist` folder to the `gh-pages` branch using `gh-pages`.
-
-## Design & implementation notes
-
-- **State management**: Zustand is used instead of Redux to keep state logic small and focused per domain (pantry, recipes, shopping list).  
-- **AI isolation**: All Gemini calls happen from Supabase Edge Functions, not directly from the browser, so the API key stays on the server side.  
-- **Data contracts**: The Edge Functions return strict JSON shapes (e.g. `title`, `description`, `ingredients`, `instructions`, etc.) which the frontend relies on; the functions defensively strip Markdown code fences and validate/normalize responses.  
-- **Styling**: Tailwind is used for layout and design; the landing page is intentionally more polished, while app screens focus on clarity and usability.
-
-## Scripts (developer utilities)
-
-All in `scripts/`. Not required for running the app. Run from project root, e.g. `node scripts/check-db.js`.
-
-- `check-db.js`: Quick Supabase recipes table check.  
-- `check-images.js`: Count recipes missing images in `src/data/recipes_with_images.json`.  
-- `test-generate.js`: Test `generate-recipe` Edge Function via Supabase client.  
-- `test-urls.js`: Test sample recipe image URLs.  
-- `verify-deployment.js`: Call Edge Functions via fetch; writes `verification_result.json`.  
-- `deduplicate_recipes.js`: Remove duplicate recipe names from `src/data/recipes.json`.  
-- `fix_duplicates.sql`: RLS policies for recipes (run in Supabase SQL editor).  
-- `generate-curated-recipes.mjs`, `add-recipe-images.mjs`: Build curated recipe datasets.
-
-## Possible future improvements
-
-- Add pagination / filtering for recipes.  
-- More granular pantry item editing (expiration dates, categories).  
-- Better error reporting and fallback behavior when Gemini is rate limited or unavailable.  
-- User‑customizable dietary preferences (vegan, halal, etc.) baked into recipe generation.
-
-
-
+The app is configured for GitHub Pages; `deploy` publishes the `dist` folder to the `gh-pages` branch.

@@ -1,33 +1,36 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.48.0";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.0';
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+function jsonError(error: string, code: string, details?: unknown) {
+  return new Response(JSON.stringify({ error, code, ...(details != null && { details }) }), {
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    status: 400,
+  });
+}
+
 Deno.serve(async (req: Request) => {
-  // Handle CORS preflight requests
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !serviceKey) {
-      throw new Error(
-        "SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not set. Configure these secrets in your Supabase project.",
-      );
+      console.error('[delete-account] SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY not set');
+      return jsonError('Server configuration error', 'CONFIG');
     }
 
-    const authHeader = req.headers.get("Authorization");
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      throw new Error("Missing Authorization header");
+      return jsonError('Missing Authorization header', 'VALIDATION');
     }
 
-    // Client bound to the current user's JWT so we can get auth.uid()
     const supabaseUserClient = createClient(supabaseUrl, serviceKey, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -38,57 +41,41 @@ Deno.serve(async (req: Request) => {
     } = await supabaseUserClient.auth.getUser();
 
     if (userError || !user) {
-      throw new Error(userError?.message || "Unable to get current user");
+      console.error('[delete-account] getUser failed', userError?.message);
+      return jsonError(userError?.message ?? 'Unable to get current user', 'AUTH', {
+        details: userError?.message,
+      });
     }
 
     const userId = user.id;
-
-    // Admin client with full privileges
     const supabaseAdmin = createClient(supabaseUrl, serviceKey);
 
-    // Best-effort cleanup of user-owned data
-    const tablesWithUserId = [
-      "pantry_items",
-      "shopping_list",
-      "favorites",
-      // add other user-scoped tables here if needed
-    ] as const;
+    const tablesWithUserId = ['pantry_items', 'shopping_list', 'favorites'] as const;
 
     for (const table of tablesWithUserId) {
-      const { error } = await supabaseAdmin
-        .from(table)
-        .delete()
-        .eq("user_id", userId);
+      const { error } = await supabaseAdmin.from(table).delete().eq('user_id', userId);
       if (error) {
-        console.error(`Error deleting from ${table}:`, error.message);
+        console.error(`[delete-account] Error deleting from ${table}:`, error.message);
       }
     }
 
-    // Finally, delete the auth user
-    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(
-      userId,
-    );
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId);
 
     if (deleteError) {
-      throw new Error(deleteError.message);
+      console.error('[delete-account] deleteUser failed', deleteError.message);
+      return jsonError(deleteError.message, 'AUTH', { details: deleteError.message });
     }
 
-    return new Response(
-      JSON.stringify({ success: true }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      },
-    );
-  } catch (error: any) {
-    console.error("Delete account error:", error);
-    return new Response(
-      JSON.stringify({ error: error.message ?? "Unknown error" }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 400,
-      },
-    );
+    return new Response(JSON.stringify({ success: true }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[delete-account]', message, err);
+    return new Response(JSON.stringify({ error: message, code: 'SERVER_ERROR' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 400,
+    });
   }
 });
-
