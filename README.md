@@ -1,7 +1,6 @@
 # 🍳 PantryCheff
 
-> Cook from what you already have — AI-powered pantry tracking,
-> recipe matching, and personalized recipe generation.
+> Cook from what you already have — AI-powered pantry tracking, recipe matching, and personalized recipe generation.
 
 [![CI](https://github.com/Gurehmat/PANTRYCHEFFV3/actions/workflows/ci.yml/badge.svg)](https://github.com/Gurehmat/PANTRYCHEFFV3/actions/workflows/ci.yml)
 
@@ -10,35 +9,23 @@
 
 ## ✨ Features
 
-List every feature with emoji icons, grouped logically:
-
 **Core**
-- 🗄️ Pantry Management — add, edit, delete items with quantities,
-  units, and expiry dates
-- 📸 AI Fridge Scanner — photograph your fridge/pantry and let
-  Google Gemini identify ingredients automatically
-- 📖 Recipe Browser — browse curated recipes matched against your
-  pantry items
+- 🗄️ Pantry Management — add, edit, delete items with quantities, units, and expiry dates
+- 📸 AI Fridge Scanner — photograph your fridge/pantry and let Google Gemini identify ingredients automatically
+- 📖 Recipe Browser — browse curated recipes matched against your pantry items
 - ❤️ Favorites — save recipes you love
 - 🛒 Shopping List — track missing ingredients you need to buy
 
 **AI-Powered**
-- 🪄 Magic Recipe Generation — AI generates personalized recipes
-  from your current pantry items
-- 🔄 Smart Substitutions — AI suggests ingredient substitutions
-  for missing items
-- 📊 Confidence-Based Matching — algorithm scores recipe matches
-  with exact, partial, and fuzzy matching
+- 🪄 Magic Recipe Generation — AI generates personalized recipes from your current pantry items
+- 🔄 Smart Substitutions — AI suggests ingredient substitutions for missing items
+- 📊 Confidence-Based Matching — algorithm scores recipe matches with exact, partial, and fuzzy matching
 
 **User Experience**
-- 👨‍🍳 Cook Mode — distraction-free step-by-step cooking interface
-  with ingredient checklist
-- ⚠️ Expiry Alerts — color-coded warnings for expired and
-  soon-to-expire pantry items
-- 📈 Dashboard Stats — at-a-glance view of pantry status and
-  makeable recipes
-- ⚡ Response Caching — AI responses cached to reduce API calls
-  and improve speed
+- 👨‍🍳 Cook Mode — distraction-free step-by-step cooking interface with ingredient checklist
+- ⚠️ Expiry Alerts — color-coded warnings for expired and soon-to-expire pantry items
+- 📈 Dashboard Stats — at-a-glance view of pantry status and makeable recipes
+- ⚡ Response Caching — AI responses cached to reduce API calls and improve speed
 - 🛡️ Rate Limiting — client-side protection against API abuse
 
 **Engineering**
@@ -50,7 +37,6 @@ List every feature with emoji icons, grouped logically:
 
 ## 📸 Screenshots
 
-(Add HTML comment placeholders for where to insert screenshots later:)
 <!-- Screenshot: Landing Page -->
 <!-- Screenshot: Dashboard with Stats and Expiry Alerts -->
 <!-- Screenshot: Pantry with items -->
@@ -59,8 +45,6 @@ List every feature with emoji icons, grouped logically:
 <!-- Screenshot: Fridge Scanner -->
 
 ## 🏗️ Architecture
-
-Add a Mermaid diagram:
 
 ```mermaid
 graph TB
@@ -98,18 +82,18 @@ graph TB
     style Multi fill:#4285f4
 ```
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
 - Node.js (LTS)
 - A [Supabase](https://supabase.com) project
-- A [Gemini API key](https://ai.google.dev/) (configured as a secret in Supabase Edge Functions)
+- A [Gemini API key](https://ai.google.dev/) configured as a secret in Supabase Edge Functions
 
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/PANTRYCHEFFV3.git
+git clone https://github.com/Gurehmat/PANTRYCHEFFV3.git
 cd PANTRYCHEFFV3
 npm install
 ```
@@ -127,8 +111,8 @@ In the Supabase Dashboard, set the `GEMINI_API_KEY` secret for Edge Functions, t
 
 ### 3. Supabase setup
 
-- Apply the SQL in `supabase/migrations/` (e.g. via the Supabase SQL editor or CLI).
-- In **Authentication → URL Configuration**, set **Site URL** and **Redirect URLs** to match your app (e.g. GitHub Pages base URL and `http://localhost:5173` for local dev).
+- Apply the SQL in `supabase/migrations/` using the Supabase SQL editor or CLI
+- In **Authentication → URL Configuration**, set **Site URL** and **Redirect URLs** to match your app, such as your GitHub Pages URL and `http://localhost:5173` for local development
 
 ### 4. Run locally
 
@@ -136,7 +120,7 @@ In the Supabase Dashboard, set the `GEMINI_API_KEY` secret for Edge Functions, t
 npm run dev
 ```
 
-Open the URL shown in the terminal (typically `http://localhost:5173`).
+Open the URL shown in the terminal, usually `http://localhost:5173`.
 
 ### 5. Build and deploy
 
@@ -145,4 +129,76 @@ npm run build
 npm run deploy
 ```
 
-The app is configured for GitHub Pages; `deploy` publishes the `dist` folder to the `gh-pages` branch.
+The app is configured for GitHub Pages, and `deploy` publishes the `dist` folder to the `gh-pages` branch.
+
+## 🛠️ Tech Stack
+
+**Frontend**
+- React 19
+- TypeScript
+- Vite
+- React Router
+- Zustand
+- Tailwind CSS
+
+**Backend**
+- Supabase Auth
+- Supabase Postgres
+- Row-Level Security
+- Supabase Edge Functions
+
+**AI**
+- Google Gemini for text generation
+- Google Gemini multimodal vision for ingredient detection
+
+**Tooling**
+- Vitest
+- ESLint
+- Prettier
+- Husky
+- GitHub Actions
+
+## 🧪 Testing
+
+Run the test suite with:
+
+```bash
+npm test
+```
+
+Run linting with:
+
+```bash
+npm run lint
+```
+
+## 📂 Project Structure
+
+```text
+PANTRYCHEFFV3/
+├── src/                 # React frontend
+├── supabase/
+│   ├── functions/       # Edge Functions
+│   └── migrations/      # Database schema and policies
+├── public/              # Static assets
+├── scripts/             # Utility scripts
+└── tests/               # Automated tests
+```
+
+## 🔐 Security
+
+- Row-Level Security ensures users can only access their own pantry data
+- API secrets are stored securely in Supabase Edge Function secrets
+- Rate limiting and caching help reduce abuse and unnecessary API usage
+
+## 🌱 Future Improvements
+
+- Barcode scanner for faster pantry entry
+- Meal planning calendar
+- Nutrition tracking
+- Smarter household pantry sharing
+- Voice-guided cook mode
+
+## 📄 License
+
+This project is for educational and portfolio purposes unless otherwise specified.
