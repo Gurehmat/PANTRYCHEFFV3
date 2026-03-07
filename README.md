@@ -3,9 +3,9 @@
 > Cook from what you already have — AI-powered pantry tracking,
 > recipe matching, and personalized recipe generation.
 
-[![CI](https://github.com/YOUR_GITHUB_USERNAME/PANTRYCHEFFV3/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_GITHUB_USERNAME/PANTRYCHEFFV3/actions/workflows/ci.yml)
+[![CI](https://github.com/Gurehmat/PANTRYCHEFFV3/actions/workflows/ci.yml/badge.svg)](https://github.com/Gurehmat/PANTRYCHEFFV3/actions/workflows/ci.yml)
 
-[Live Demo](https://YOUR_GITHUB_USERNAME.github.io/PANTRYCHEFFV3/) |
+[Live Demo](https://gurehmat.github.io/PANTRYCHEFFV3/) |
 [Architecture](#architecture) | [Getting Started](#getting-started)
 
 ## ✨ Features
