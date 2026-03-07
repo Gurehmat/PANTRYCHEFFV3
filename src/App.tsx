@@ -19,98 +19,72 @@ const SignUpPage = lazy(() => import('./components/SignUpPage'));
 const ForgotPasswordPage = lazy(() => import('./components/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./components/ResetPasswordPage'));
 
-const RECOVERY_MODE_KEY = 'recovery_mode';
-
-async function handleAuthRedirect(): Promise<void> {
-  if (typeof window === 'undefined') return;
-
-  // Check for code in query params
-  const urlParams = new URLSearchParams(window.location.search);
-  let code = urlParams.get('code');
-
-  // Also check if code is embedded in the hash (e.g., #/auth/reset-password?code=XXX)
-  if (!code && window.location.hash.includes('code=')) {
-    const hashContent = window.location.hash.substring(1);
-    const queryStart = hashContent.indexOf('?');
-    const paramStr = queryStart >= 0 ? hashContent.substring(queryStart + 1) : hashContent;
-    const hashParams = new URLSearchParams(paramStr);
-    code = hashParams.get('code');
-  }
-
-  if (code) {
-    try {
-      const { error } = await supabase.auth.exchangeCodeForSession(code);
-      if (error) {
-        console.error('Code exchange failed:', error);
-      }
-      // Clean the URL — remove the code parameter, set the hash to the reset password page
-      window.history.replaceState(null, '', window.location.pathname + '#/auth/reset-password');
-      // The onAuthStateChange listener will handle the PASSWORD_RECOVERY event after code exchange
-    } catch (err) {
-      console.error('Auth redirect handling failed:', err);
-    }
-  }
-}
-
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isRecoveryMode, setIsRecoveryMode] = useState(
-    () => typeof window !== 'undefined' && sessionStorage.getItem(RECOVERY_MODE_KEY) === '1'
-  );
+  const [isRecoveryMode, setIsRecoveryMode] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+
+    // Check if we're returning from a password reset email click
+    const hasRecoveryFlag = sessionStorage.getItem('password_recovery_pending') === '1';
+    const urlHasCode =
+      window.location.search.includes('code=') || window.location.hash.includes('code=');
+
+    // Also check if we're already in active recovery mode (page was refreshed during recovery)
+    const activeRecovery = sessionStorage.getItem('recovery_mode_active') === '1';
+
+    if (hasRecoveryFlag && urlHasCode) {
+      // This is a recovery redirect — activate recovery mode
+      sessionStorage.removeItem('password_recovery_pending');
+      sessionStorage.setItem('recovery_mode_active', '1');
+
+      // Clean the URL after a short delay to let Supabase auto-exchange the code first
+      setTimeout(() => {
+        window.history.replaceState(null, '', window.location.pathname + '#/auth/reset-password');
+      }, 500);
+
+      return true;
+    }
+
+    return activeRecovery;
+  });
 
   useEffect(() => {
     const loadTimeout = window.setTimeout(() => setLoading(false), 6000);
 
-    // Set up listener FIRST so we catch PASSWORD_RECOVERY when exchangeCodeForSession runs
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setLoading(false);
+    });
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, s) => {
+      // If PASSWORD_RECOVERY fires (may or may not happen depending on timing), activate recovery mode
       if (event === 'PASSWORD_RECOVERY') {
         setIsRecoveryMode(true);
-        setSession(s);
         if (typeof window !== 'undefined') {
-          sessionStorage.setItem(RECOVERY_MODE_KEY, '1');
+          sessionStorage.setItem('recovery_mode_active', '1');
           window.location.hash = '#/auth/reset-password';
         }
+        setSession(s);
         return;
       }
 
-      // For other events, update session as normal but check recovery flag first
-      if (typeof window !== 'undefined' && sessionStorage.getItem(RECOVERY_MODE_KEY) === '1') {
-        // Still in recovery — don't redirect to dashboard
-        return;
+      if (event === 'SIGNED_OUT') {
+        setIsRecoveryMode(false);
+        if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('recovery_mode_active');
+          sessionStorage.removeItem('password_recovery_pending');
+        }
       }
 
+      // If in recovery mode, still update session but don't let the router send to dashboard
       setSession(s);
     });
 
-    async function init() {
-      await handleAuthRedirect();
-
-      supabase.auth
-        .getSession()
-        .then(({ data: { session: s } }) => {
-          setSession(s);
-          setLoading(false);
-        })
-        .catch(() => {
-          setSession(null);
-          setLoading(false);
-        })
-        .finally(() => {
-          if (typeof window !== 'undefined') {
-            window.clearTimeout(loadTimeout);
-          }
-        });
-    }
-
-    init();
-
     return () => {
-      if (typeof window !== 'undefined') {
-        window.clearTimeout(loadTimeout);
-      }
+      window.clearTimeout(loadTimeout);
       subscription?.unsubscribe();
     };
   }, []);
@@ -133,7 +107,8 @@ function App() {
                   onRecoveryComplete={() => {
                     setIsRecoveryMode(false);
                     if (typeof window !== 'undefined') {
-                      sessionStorage.removeItem(RECOVERY_MODE_KEY);
+                      sessionStorage.removeItem('recovery_mode_active');
+                      sessionStorage.removeItem('password_recovery_pending');
                     }
                   }}
                 />
