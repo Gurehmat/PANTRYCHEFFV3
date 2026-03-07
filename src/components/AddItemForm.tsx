@@ -43,6 +43,7 @@ export default function AddItemForm() {
           <label className="block text-sm font-medium text-gray-700 mb-1">Item Name</label>
           <input
             type="text"
+            id="add-pantry-item-name"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="e.g., Avocados"

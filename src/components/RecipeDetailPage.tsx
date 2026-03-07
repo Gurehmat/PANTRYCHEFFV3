@@ -36,7 +36,7 @@ function parseInstructions(recipe: Recipe): string[] {
     if (Array.isArray(recipe.instructions)) {
       steps = recipe.instructions.flatMap((step) => {
         if (typeof step === 'string' && step.length > 50) {
-          return step.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
+          return step.split(/(?<=[.!?])(?:\s+|(?=[A-Z]))/).filter((s) => s.trim().length > 0);
         }
         return [typeof step === 'string' ? step : String(step)];
       });
@@ -47,15 +47,15 @@ function parseInstructions(recipe: Recipe): string[] {
           const parsed = JSON.parse(trimmed) as unknown[];
           steps = parsed.flatMap((step) => {
             if (typeof step === 'string' && step.length > 50) {
-              return step.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
+              return step.split(/(?<=[.!?])(?:\s+|(?=[A-Z]))/).filter((s) => s.trim().length > 0);
             }
             return [typeof step === 'string' ? step : String(step)];
           });
         } catch {
-          steps = trimmed.split(/(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
+          steps = trimmed.split(/(?<=[.!?])(?:\s+|(?=[A-Z]))/).filter((s) => s.trim().length > 0);
         }
       } else {
-        steps = trimmed.split(/\n|(?<=[.!?])\s+/).filter((s) => s.trim().length > 0);
+        steps = trimmed.split(/\n|(?<=[.!?])(?:\s+|(?=[A-Z]))/).filter((s) => s.trim().length > 0);
       }
     }
   } catch {
@@ -118,6 +118,10 @@ export default function RecipeDetailPage() {
 
   const ingredientsList = ingredientsToStrings(recipe.ingredients);
   const steps = parseInstructions(recipe);
+  const hasCookingTime =
+    recipe.cooking_time !== undefined &&
+    recipe.cooking_time !== null &&
+    String(recipe.cooking_time).trim().length > 0;
 
   if (cookModeOn) {
     return (
@@ -223,10 +227,12 @@ export default function RecipeDetailPage() {
           </div>
           <p className="text-gray-600 text-lg mb-4">{recipe.description ?? ''}</p>
           <div className="flex items-center gap-4 flex-wrap">
-            <div className="flex items-center gap-2 text-gray-500">
-              <Clock className="w-5 h-5" />
-              <span className="font-medium">{recipe.cooking_time}</span>
-            </div>
+            {hasCookingTime && (
+              <div className="flex items-center gap-2 text-gray-500">
+                <Clock className="w-5 h-5" />
+                <span className="font-medium">{recipe.cooking_time}</span>
+              </div>
+            )}
             <button
               type="button"
               onClick={() => setCookModeOn(true)}

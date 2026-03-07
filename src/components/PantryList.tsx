@@ -202,13 +202,17 @@ export default function PantryList() {
             <p className="text-sm text-gray-500 mt-1">Add some items to get started!</p>
             <button
               type="button"
-              onClick={() =>
-                document.querySelector<HTMLInputElement>('input[placeholder*="Add"]')?.focus()
-              }
-              className="mt-4 inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors"
+              onClick={() => {
+                const input = document.querySelector<HTMLInputElement>('#add-pantry-item-name');
+                if (input) {
+                  input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                  input.focus();
+                }
+              }}
+              className="mt-4 inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors cursor-pointer"
             >
               <Package className="w-4 h-4" />
-              Add your first item
+              Add your first item to pantry
             </button>
           </div>
         ) : (

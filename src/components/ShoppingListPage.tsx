@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, memo, type FormEvent } from 'react';
 import { useShoppingListStore } from '../store/shoppingListStore';
-import { Plus, Trash2, CheckCircle, Circle, ShoppingCart } from 'lucide-react';
+import { usePantryStore } from '../store/pantryStore';
+import { Plus, Trash2, CheckCircle, Circle, ShoppingCart, Package } from 'lucide-react';
 import type { ShoppingListItem } from '../types/database';
 
 /** Memoized because parent re-renders on store updates (e.g. add/toggle another item) but this row only needs to re-render when its own item or handlers change. */
@@ -8,10 +9,12 @@ const ShoppingListItemRow = memo(function ShoppingListItemRow({
   item,
   onToggle,
   onDelete,
+  onAddToPantry,
 }: {
   item: ShoppingListItem;
   onToggle: (id: string, checked: boolean) => void;
   onDelete: (id: string) => void;
+  onAddToPantry: (item: ShoppingListItem) => void;
 }) {
   return (
     <div className="flex items-center gap-3 group p-2 rounded-lg hover:bg-gray-50 transition-colors">
@@ -27,6 +30,14 @@ const ShoppingListItemRow = memo(function ShoppingListItemRow({
         {item.name}
       </span>
       <button
+        type="button"
+        onClick={() => onAddToPantry(item)}
+        className="text-gray-300 hover:text-green-600 opacity-0 group-hover:opacity-100 transition-all p-2"
+        title="Add to pantry"
+      >
+        <Package className="w-5 h-5" />
+      </button>
+      <button
         onClick={() => onDelete(item.id)}
         className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all p-2"
       >
@@ -38,7 +49,9 @@ const ShoppingListItemRow = memo(function ShoppingListItemRow({
 
 export default function ShoppingListPage() {
   const { items, fetchItems, addItem, toggleItem, deleteItem, loading } = useShoppingListStore();
+  const addPantryItem = usePantryStore((state) => state.addItem);
   const [newItemName, setNewItemName] = useState('');
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     fetchItems();
@@ -65,6 +78,25 @@ export default function ShoppingListPage() {
     [deleteItem]
   );
 
+  const handleAddToPantry = useCallback(
+    async (item: ShoppingListItem) => {
+      const result = await addPantryItem({
+        name: item.name,
+        quantity: item.quantity ?? 1,
+        unit: item.unit ?? 'pc',
+      });
+      if (result.success) {
+        await deleteItem(item.id);
+        setToast(`Moved "${item.name}" to your pantry.`);
+        window.setTimeout(() => setToast(null), 3000);
+      } else {
+        setToast(`Could not add "${item.name}" to pantry.`);
+        window.setTimeout(() => setToast(null), 4000);
+      }
+    },
+    [addPantryItem, deleteItem]
+  );
+
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -72,6 +104,11 @@ export default function ShoppingListPage() {
           <ShoppingCart className="w-6 h-6 text-orange-500" />
           Shopping List
         </h1>
+        {toast && (
+          <div className="mb-4 text-sm px-3 py-2 rounded-lg bg-green-50 text-green-700 border border-green-100">
+            {toast}
+          </div>
+        )}
         <form onSubmit={handleAdd} className="flex gap-2 mb-6">
           <input
             type="text"
@@ -113,6 +150,7 @@ export default function ShoppingListPage() {
                 item={item}
                 onToggle={handleToggle}
                 onDelete={handleDelete}
+                onAddToPantry={handleAddToPantry}
               />
             ))}
         </div>
