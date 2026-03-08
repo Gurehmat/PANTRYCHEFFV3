@@ -26,6 +26,9 @@ export default function SeedButton() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Must be logged in to seed database');
 
+      const { error: favError } = await supabase.from('favorites').delete().eq('user_id', user.id);
+      if (favError) throw favError;
+
       const { error: deleteError } = await supabase.from('recipes').delete().eq('user_id', user.id);
       if (deleteError) throw deleteError;
 
