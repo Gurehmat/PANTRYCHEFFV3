@@ -37,12 +37,17 @@
 
 ## 📸 Screenshots
 
-<!-- Screenshot: Landing Page -->
-<!-- Screenshot: Dashboard with Stats and Expiry Alerts -->
+<!-- Screenshot: Landing Page / Dashboard -->
+![Dashboard](public/screenshots/dashboard.png)
+
 <!-- Screenshot: Pantry with items -->
+![Pantry](public/screenshots/Pantry.png)
+
+<!-- Screenshot: Recipe list / match scores -->
+![Recipe list](public/screenshots/recipe-page.png)
+
 <!-- Screenshot: AI Recipe Generation -->
-<!-- Screenshot: Cook Mode -->
-<!-- Screenshot: Fridge Scanner -->
+![AI Recipe Generation](public/screenshots/Ai-Recipe-Generation.png)
 
 ## 🏗️ Architecture
 

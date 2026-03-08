@@ -31,3 +31,7 @@ payload.json
 *.njsproj
 *.sln
 *.sw?
+
+# Cursor / AI editor config
+.cursor/
+cursor.json
