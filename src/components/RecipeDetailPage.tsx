@@ -31,6 +31,20 @@ function ingredientsToStrings(ingredients: Recipe['ingredients']): string[] {
   );
 }
 
+/** Normalize "2gprotein" / "2g of protein" / "11g" → "2g protein" (no duplicate label, proper space). */
+function formatProtein(value: string | null | undefined): string | null {
+  if (value == null || typeof value !== 'string') return null;
+  const amount = value.replace(/\s+of\s+/gi, ' ').match(/\d+g/i)?.[0];
+  return amount ? `${amount} protein` : null;
+}
+
+/** Normalize "9gfat" / "9g of fat" / "16g" → "9g fat". */
+function formatFat(value: string | null | undefined): string | null {
+  if (value == null || typeof value !== 'string') return null;
+  const amount = value.replace(/\s+of\s+/gi, ' ').match(/\d+g/i)?.[0];
+  return amount ? `${amount} fat` : null;
+}
+
 function parseInstructions(recipe: Recipe): string[] {
   let steps: string[] = [];
   try {
@@ -234,17 +248,19 @@ export default function RecipeDetailPage() {
                 <span className="font-medium">{recipe.cooking_time}</span>
               </div>
             )}
-            {(recipe.calories != null || recipe.protein != null || recipe.fat != null) && (
+            {(recipe.calories != null ||
+              formatProtein(recipe.protein) ||
+              formatFat(recipe.fat)) && (
               <div className="flex items-center gap-2 text-gray-600 text-sm">
                 <Flame className="w-4 h-4 text-orange-500" />
                 <span>
                   {recipe.calories != null && `${recipe.calories} cal`}
                   {recipe.calories != null &&
-                    (recipe.protein != null || recipe.fat != null) &&
+                    (formatProtein(recipe.protein) || formatFat(recipe.fat)) &&
                     ' · '}
-                  {recipe.protein != null && `${recipe.protein} protein`}
-                  {recipe.protein != null && recipe.fat != null && ' · '}
-                  {recipe.fat != null && `${recipe.fat} fat`}
+                  {formatProtein(recipe.protein)}
+                  {formatProtein(recipe.protein) && formatFat(recipe.fat) && ' · '}
+                  {formatFat(recipe.fat)}
                 </span>
               </div>
             )}
