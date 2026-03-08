@@ -209,7 +209,7 @@ export default function PantryList() {
                   input.focus();
                 }
               }}
-              className="mt-4 inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors cursor-pointer"
+              className="mt-4 inline-flex items-center gap-2 bg-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-orange-600 transition-colors cursor-pointer focus:ring-2 focus:ring-orange-400 focus:ring-offset-2"
             >
               <Package className="w-4 h-4" />
               Add your first item to pantry

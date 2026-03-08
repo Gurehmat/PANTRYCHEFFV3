@@ -32,10 +32,14 @@ export default function SeedButton() {
       const recipesToInsert = recipes.map((recipe: SeedRecipe) => ({
         user_id: user.id,
         title: recipe.Name,
-        description: stripHtml(recipe.Description),
+        description: stripHtml(recipe.Description) ?? null,
         ingredients: recipe.Ingredients,
         instructions: JSON.stringify(recipe.Method),
         image_url: recipe.Image || null,
+        cooking_time: recipe.PrepTime ?? null,
+        calories: recipe.Calories ?? null,
+        protein: recipe.Protein ?? null,
+        fat: recipe.Fat ?? null,
       }));
 
       const { error } = await supabase.from('recipes').insert(recipesToInsert);

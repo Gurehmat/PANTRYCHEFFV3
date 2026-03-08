@@ -17,6 +17,7 @@ import {
   ShoppingCart,
   Heart,
   Play,
+  Flame,
 } from 'lucide-react';
 import OptimizedImage from './common/OptimizedImage';
 import CookMode from './recipes/CookMode';
@@ -231,6 +232,20 @@ export default function RecipeDetailPage() {
               <div className="flex items-center gap-2 text-gray-500">
                 <Clock className="w-5 h-5" />
                 <span className="font-medium">{recipe.cooking_time}</span>
+              </div>
+            )}
+            {(recipe.calories != null || recipe.protein != null || recipe.fat != null) && (
+              <div className="flex items-center gap-2 text-gray-600 text-sm">
+                <Flame className="w-4 h-4 text-orange-500" />
+                <span>
+                  {recipe.calories != null && `${recipe.calories} cal`}
+                  {recipe.calories != null &&
+                    (recipe.protein != null || recipe.fat != null) &&
+                    ' · '}
+                  {recipe.protein != null && `${recipe.protein} protein`}
+                  {recipe.protein != null && recipe.fat != null && ' · '}
+                  {recipe.fat != null && `${recipe.fat} fat`}
+                </span>
               </div>
             )}
             <button

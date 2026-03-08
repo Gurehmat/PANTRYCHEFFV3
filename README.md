@@ -114,6 +114,8 @@ In the Supabase Dashboard, set the `GEMINI_API_KEY` secret for Edge Functions, t
 - Apply the SQL in `supabase/migrations/` using the Supabase SQL editor or CLI
 - In **Authentication → URL Configuration**, set **Site URL** and **Redirect URLs** to match your app, such as your GitHub Pages URL and `http://localhost:5173` for local development
 
+**Seeding recipes:** The app reads recipes from the Supabase `recipes` table. To populate it, the app uses the file **`public/data/recipes_with_images.json`** as the seed source. After you sign in, use the **"Seed Database"** button (e.g. on the Recipes page); it fetches that JSON, then inserts (and replaces) recipes for your user. Ensure `public/data/recipes_with_images.json` exists (e.g. copy from `src/data/recipes_with_images.json` if you keep that as the canonical source).
+
 ### 4. Run locally
 
 ```bash

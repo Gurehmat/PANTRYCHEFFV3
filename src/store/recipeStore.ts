@@ -7,7 +7,7 @@ import type { RecipeStore } from '../types/store';
 
 const SOURCE = 'recipeStore';
 const RECIPE_COLUMNS =
-  'id, user_id, title, description, ingredients, instructions, cooking_time, image_url, created_at';
+  'id, user_id, title, description, ingredients, instructions, cooking_time, image_url, calories, protein, fat, created_at';
 
 interface RecipeRow {
   id: string;
@@ -17,6 +17,9 @@ interface RecipeRow {
   instructions?: string | string[];
   cooking_time?: number | string | null;
   image_url?: string | null;
+  calories?: number | null;
+  protein?: string | null;
+  fat?: string | null;
   created_at?: string;
   [key: string]: unknown;
 }

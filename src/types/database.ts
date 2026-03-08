@@ -27,6 +27,9 @@ export interface Recipe {
   instructions: string | string[];
   cooking_time: number | string | null;
   image_url: string | null;
+  calories?: number | null;
+  protein?: string | null;
+  fat?: string | null;
   created_at: string;
 }
 

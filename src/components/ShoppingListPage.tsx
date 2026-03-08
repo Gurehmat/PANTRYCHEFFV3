@@ -33,7 +33,7 @@ const ShoppingListItemRow = memo(function ShoppingListItemRow({
         type="button"
         onClick={() => onAddToPantry(item)}
         className="text-gray-300 hover:text-green-600 opacity-0 group-hover:opacity-100 transition-all p-2"
-        title="Add to pantry"
+        title="Move to pantry"
       >
         <Package className="w-5 h-5" />
       </button>
@@ -87,7 +87,7 @@ export default function ShoppingListPage() {
       });
       if (result.success) {
         await deleteItem(item.id);
-        setToast(`Moved "${item.name}" to your pantry.`);
+        setToast(`Added ${item.name} to pantry ✓`);
         window.setTimeout(() => setToast(null), 3000);
       } else {
         setToast(`Could not add "${item.name}" to pantry.`);
