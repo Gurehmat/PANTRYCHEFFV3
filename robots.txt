@@ -1,0 +1,6 @@
+# https://www.robotstxt.org/robotstxt.html
+User-agent: *
+Allow: /
+
+# Sitemap (single-page app; main entry is the only crawlable URL)
+Sitemap: https://Gurehmat.github.io/PANTRYCHEFFV3/sitemap.xml
