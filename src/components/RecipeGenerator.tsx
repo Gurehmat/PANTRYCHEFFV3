@@ -60,15 +60,15 @@ export default function RecipeGenerator() {
 
   return (
     <div className="bg-gradient-to-br from-orange-50 to-amber-50 p-6 rounded-xl border border-orange-100 shadow-sm">
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
-          <Sparkles className="w-6 h-6 text-yellow-500" />
-          Magic Recipe
-        </h2>
+      <header className="text-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center justify-center gap-2">
+          <Sparkles className="w-6 h-6 text-yellow-500" aria-hidden />
+          Magic Recipe Generator
+        </h1>
         <p className="text-gray-600">
           Let AI create a recipe from your {pantryItems.length} pantry items
         </p>
-      </div>
+      </header>
       <div className="flex flex-col gap-2">
         <button
           onClick={() => handleGenerate(false)}

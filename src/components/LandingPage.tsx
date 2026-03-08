@@ -34,9 +34,10 @@ export default function LandingPage() {
         </header>
       )}
 
-      <main className="isolate">
-        <div
+      <main className="isolate" id="main-content">
+        <section
           className={`relative flex items-center ${isLoggedInHome ? 'pt-6' : 'pt-14'} min-h-screen`}
+          aria-label="Hero"
         >
           <div
             className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"
@@ -58,7 +59,7 @@ export default function LandingPage() {
                   Announcing AI-Powered Pantry Scanning.{' '}
                   <Link to="/auth" className="font-semibold text-orange-600">
                     <span className="absolute inset-0" aria-hidden="true" />
-                    Read more <span aria-hidden="true">&rarr;</span>
+                    Sign up to try it <span aria-hidden="true">&rarr;</span>
                   </Link>
                 </div>
               </div>
@@ -69,9 +70,9 @@ export default function LandingPage() {
                 </span>
               </h1>
               <p className="mt-6 text-lg leading-8 text-gray-600 mb-10">
-                PantryCheff tells you exactly what recipes you can make with the ingredients you
-                already have. Scan your fridge with AI, get instant recipes, and never ask
-                &quot;What&apos;s for dinner?&quot; again.
+                PantryCheff is your AI pantry tracker and recipe generator: cook with ingredients
+                you already have. Find recipes that match your pantry, scan your fridge with AI, and
+                cut food waste—no more &quot;What&apos;s for dinner?&quot;
               </p>
               <div className="flex items-center justify-center gap-x-6">
                 <Link
@@ -85,7 +86,7 @@ export default function LandingPage() {
                   href="#features"
                   className="text-sm font-semibold leading-6 text-gray-900 flex items-center gap-1 hover:text-orange-600 transition-colors"
                 >
-                  Learn more <ArrowRight className="w-4 h-4" />
+                  Learn more about features <ArrowRight className="w-4 h-4" aria-hidden />
                 </a>
               </div>
             </div>
@@ -103,14 +104,17 @@ export default function LandingPage() {
               }}
             />
           </div>
-        </div>
+        </section>
 
-        <div
+        <section
           id="features"
           className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32"
+          aria-labelledby="features-heading"
         >
           <div className="mx-auto max-w-2xl lg:text-center">
-            <h2 className="text-base font-semibold leading-7 text-orange-600">Cook faster</h2>
+            <h2 id="features-heading" className="text-base font-semibold leading-7 text-orange-600">
+              Cook faster
+            </h2>
             <p className="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
               Everything you need to master your kitchen
             </p>
@@ -172,9 +176,9 @@ export default function LandingPage() {
               </div>
             </dl>
           </div>
-        </div>
+        </section>
 
-        <div className="bg-orange-50">
+        <section className="bg-orange-50" aria-label="Get started">
           <div className="px-4 sm:px-6 lg:px-8 py-16 sm:py-24 lg:py-32">
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
@@ -196,9 +200,9 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
-        <footer className="bg-white border-t border-gray-100">
+        <footer className="bg-white border-t border-gray-100" role="contentinfo">
           <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
             <div className="flex justify-center flex-col md:flex-row items-center space-x-6 md:order-2 gap-4">
               <span className="text-sm leading-5 text-gray-500">

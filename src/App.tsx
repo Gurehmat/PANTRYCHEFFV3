@@ -3,6 +3,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from './lib/supabaseClient';
 import Layout from './components/Layout';
+import RouteMeta from './components/RouteMeta';
 import SectionErrorBoundary from './components/common/SectionErrorBoundary';
 import PageLoader from './components/common/PageLoader';
 
@@ -74,6 +75,7 @@ function App() {
 
   return (
     <Router>
+      <RouteMeta />
       {isRecoveryMode ? (
         <Routes>
           <Route
