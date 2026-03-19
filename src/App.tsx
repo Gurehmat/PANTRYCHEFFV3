@@ -23,24 +23,7 @@ const ResetPasswordPage = lazy(() => import('./components/ResetPasswordPage'));
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isRecoveryMode, setIsRecoveryMode] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-
-    // Check URL for recovery marker
-    const searchParams = new URLSearchParams(window.location.search);
-    const isRecovery = searchParams.get('type') === 'recovery';
-
-    if (isRecovery) {
-      // Clean the URL after reading — replace with reset password route
-      // Use setTimeout to let Supabase auto-exchange the code first
-      setTimeout(() => {
-        window.history.replaceState(null, '', window.location.pathname + '#/auth/reset-password');
-      }, 1000);
-      return true;
-    }
-
-    return false;
-  });
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session: s } }) => {
@@ -54,6 +37,7 @@ function App() {
       if (event === 'PASSWORD_RECOVERY') {
         setIsRecoveryMode(true);
         setSession(s);
+        window.history.replaceState(null, '', window.location.pathname + '#/auth/reset-password');
         return;
       }
 
