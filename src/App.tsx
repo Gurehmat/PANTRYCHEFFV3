@@ -26,17 +26,13 @@ function App() {
   const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
-      setSession(s);
-      setLoading(false);
-    });
-
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, s) => {
       if (event === 'PASSWORD_RECOVERY') {
         setIsRecoveryMode(true);
         setSession(s);
+        setLoading(false);
         window.history.replaceState(null, '', window.location.pathname + '#/auth/reset-password');
         return;
       }
@@ -46,6 +42,15 @@ function App() {
       }
 
       setSession(s);
+      setLoading(false);
+    });
+
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession((prev) => {
+        if (prev === null) return s;
+        return prev;
+      });
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
