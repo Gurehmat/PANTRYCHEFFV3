@@ -32,7 +32,7 @@ export default function SignUpPage() {
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}${window.location.pathname}#/auth/signin`,
+          emailRedirectTo: `${window.location.origin}${import.meta.env.BASE_URL}#/auth/signin`,
         },
       });
       if (err) throw err;

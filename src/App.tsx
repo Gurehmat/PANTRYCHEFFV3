@@ -2,6 +2,7 @@ import { useEffect, useState, lazy, Suspense } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from './lib/supabaseClient';
+import { isPasswordRecoverySession } from './lib/authRecovery';
 import Layout from './components/Layout';
 import RouteMeta from './components/RouteMeta';
 import SectionErrorBoundary from './components/common/SectionErrorBoundary';
@@ -20,12 +21,27 @@ const SignUpPage = lazy(() => import('./components/SignUpPage'));
 const ForgotPasswordPage = lazy(() => import('./components/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('./components/ResetPasswordPage'));
 
+function replaceHashToResetPassword() {
+  window.history.replaceState(null, '', window.location.pathname + '#/auth/reset-password');
+}
+
 function App() {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
   useEffect(() => {
+    const applyRecoveryFromSession = (s: Session | null): boolean => {
+      if (s && isPasswordRecoverySession(s)) {
+        setIsRecoveryMode(true);
+        setSession(s);
+        setLoading(false);
+        replaceHashToResetPassword();
+        return true;
+      }
+      return false;
+    };
+
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, s) => {
@@ -33,7 +49,7 @@ function App() {
         setIsRecoveryMode(true);
         setSession(s);
         setLoading(false);
-        window.history.replaceState(null, '', window.location.pathname + '#/auth/reset-password');
+        replaceHashToResetPassword();
         return;
       }
 
@@ -41,11 +57,18 @@ function App() {
         setIsRecoveryMode(false);
       }
 
+      if ((event === 'INITIAL_SESSION' || event === 'SIGNED_IN') && applyRecoveryFromSession(s)) {
+        return;
+      }
+
       setSession(s);
       setLoading(false);
     });
 
     supabase.auth.getSession().then(({ data: { session: s } }) => {
+      if (applyRecoveryFromSession(s)) {
+        return;
+      }
       setSession((prev) => {
         if (prev === null) return s;
         return prev;

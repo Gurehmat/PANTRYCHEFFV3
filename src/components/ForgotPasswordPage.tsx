@@ -19,7 +19,7 @@ export default function ForgotPasswordPage() {
     }
     try {
       setLoading(true);
-      const redirectTo = `${window.location.origin}/PANTRYCHEFFV3/`;
+      const redirectTo = `${window.location.origin}${import.meta.env.BASE_URL}`;
       const { error: err } = await supabase.auth.resetPasswordForEmail(email.trim(), {
         redirectTo,
       });
